@@ -44,7 +44,9 @@ jobs:
         if: steps.release.outputs.publish == 'true'
         env:
           RELEASE_ARCHIVE: ${{ steps.release.outputs.archive }}
-        run: npm publish "$RELEASE_ARCHIVE" --access public --provenance --registry=https://registry.npmjs.org/
+        run: |
+          test -f "$RELEASE_ARCHIVE"
+          npm publish "$RELEASE_ARCHIVE" --access public --provenance --registry=https://registry.npmjs.org/
       - name: Confirm public npm latest
         if: steps.release.outputs.publish == 'true'
         run: node scripts/verify-published.mjs

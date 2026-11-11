@@ -41,7 +41,7 @@ async function main() {
     await writeFile('package-lock.json', JSON.stringify(lock, null, 2) + '\n');
   }
   if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT,
-    `publish=${plan.publish}\nversion=${plan.version}\narchive=release/${metadata.name.replace('@', '').replace('/', '-')}-${plan.version}.tgz\n`);
+    `publish=${plan.publish}\nversion=${plan.version}\narchive=./release/${metadata.name.replace('@', '').replace('/', '-')}-${plan.version}.tgz\n`);
   console.log(plan.publish ? `Release ${metadata.name}@${plan.version}` : `Commit already published as ${plan.version}; skipped`);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
