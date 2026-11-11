@@ -1,5 +1,6 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 
 const metadata = JSON.parse(await readFile("package.json", "utf8"));
 const output = "site-dist";
@@ -12,6 +13,16 @@ for (const name of ["index.html", "app.js"]) {
     .replaceAll("{{VERSION}}", metadata.version);
   await writeFile(path, content);
 }
+// Tie HTML to its exact assets so a cached old script cannot operate a new page structure.
+let index = await readFile(join(output, 'index.html'), 'utf8');
+for (const asset of ['app.js', 'styles.css']) {
+  const content = await readFile(join(output, asset));
+  const digest = createHash('sha256').update(content).digest('hex').slice(0, 12);
+  const file = asset.replace('.', `.${digest}.`);
+  await writeFile(join(output, file), content);
+  index = index.replace(`"./${asset}"`, `"./${file}"`);
+}
+await writeFile(join(output, 'index.html'), index);
 await mkdir(join(output, "examples"), { recursive: true });
 await cp("examples/article.md", join(output, "examples/article.md"));
 await cp("skills/juejin-cli", join(output, "skill"), { recursive: true });

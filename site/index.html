@@ -111,10 +111,19 @@
             <div class="tabs" role="tablist" aria-label="安装方式">
               <button
                 role="tab"
-                id="tab-npm"
+                id="tab-ai"
                 aria-selected="true"
                 aria-controls="install-panel"
+                data-install="ai"
+              >
+                AI 帮我安装
+              </button><button
+                role="tab"
+                id="tab-npm"
+                aria-selected="false"
+                aria-controls="install-panel"
                 data-install="npm"
+                tabindex="-1"
               >
                 npm 全局安装</button
               ><button
@@ -135,43 +144,34 @@
                 tabindex="-1"
               >
                 源码安装
-              </button><button
-                role="tab"
-                id="tab-ai"
-                aria-selected="false"
-                aria-controls="install-panel"
-                data-install="ai"
-                tabindex="-1"
-              >
-                AI 帮我安装
               </button>
             </div>
             <div
               id="install-panel"
               role="tabpanel"
-              aria-labelledby="tab-npm"
+              aria-labelledby="tab-ai"
               tabindex="0"
             >
               <div class="code-heading">
-                <span id="install-label">TERMINAL</span
+                <span id="install-label">LET AI DO IT</span
                 ><button
                   class="copy-button"
                   id="copy-install"
                   data-copy="install-command"
-                  aria-label="复制安装命令"
+                  aria-label="复制完整安装提示词"
                 >
-                  复制命令
+                  复制给 AI ↗
                 </button>
               </div>
-              <pre id="install-code"><code id="install-command">npm install -g {{PACKAGE_NAME}}@latest
+              <pre id="install-code" hidden><code id="install-command">npm install -g {{PACKAGE_NAME}}@latest
 juejin --help</code></pre>
-              <div id="ai-install" hidden>
+              <div id="ai-install">
                 <p>复制给 AI，让它帮你装好。</p>
                 <span>发给 Codex、Cursor 或 Claude Code，<br />环境检查、安装和技能配置交给它。</span>
               </div>
             </div>
             <p class="install-note" id="install-note">
-              安装最新版，之后启动时自动更新。写作与 draw.io 绘图 Skill 一并安装。
+              适用于能操作本机终端的 AI。需要登录验证时，由你在浏览器完成。
             </p>
             <a id="latest-download" class="latest-download" href="https://www.npmjs.com/package/{{PACKAGE_NAME}}" target="_blank" rel="noopener noreferrer">在 npm 查看最新版 ↗</a>
           </div>

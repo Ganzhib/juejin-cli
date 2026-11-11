@@ -80,6 +80,7 @@ for (const tab of document.querySelectorAll("[data-install]")) {
     else delete copy.dataset.text;
   });
 }
+document.querySelector('[data-install][aria-selected="true"]').click();
 for (const tab of document.querySelectorAll("[data-scenario]")) {
   tab.addEventListener("click", () => {
     currentScenario = tab.dataset.scenario;
