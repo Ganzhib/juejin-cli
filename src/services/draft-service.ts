@@ -1,7 +1,8 @@
-import { JuejinClient, type Draft, type DraftInput } from './client.js';
-import { CliError } from './errors.js';
-import { ImageUploader } from './imagex.js';
-import { inferredTitle, localImagePath, preflightImages, readArticle, rewriteImages, scanImages } from './markdown.js';
+import { JuejinClient } from '../platform/juejin/client.js';
+import type { Draft, DraftInput } from '../platform/juejin/types.js';
+import { CliError } from '../shared/errors.js';
+import { ImageUploader } from '../platform/juejin/imagex.js';
+import { inferredTitle, localImagePath, preflightImages, readArticle, rewriteImages, scanImages } from '../content/markdown.js';
 
 export interface DraftOptions {
   title?: string; brief?: string; category?: string; tags?: string[]; cover?: string;

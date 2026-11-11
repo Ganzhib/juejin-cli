@@ -6,6 +6,8 @@
 
 需要 Node.js **22.16+**。安装指南、场景与可复制提示词：[GitHub Pages](https://ganzhib.github.io/juejin-cli/)。
 
+当前首个 npm 版本待维护者发布；发布前请使用下方的源码安装方式。发布后可执行：
+
 ```bash
 npm install -g @ganzhibin/juejin-cli
 juejin --help
@@ -165,6 +167,16 @@ juejin history --limit 20 --json
 
 SDK 用法见 [AI 与 SDK 使用说明](docs/AI_USAGE.md)。首版交付 CLI 和 SDK，MCP 服务尚未实现。
 
+Agent 可按需发现命令，无需提前加载全部帮助：
+
+```bash
+juejin schema --json
+juejin schema article publish --json
+juejin schema column create --json
+```
+
+结果包含参数、必填项、默认值与枚举，直接从命令注册信息生成。
+
 ## 开发与验证
 
 ```bash
@@ -175,6 +187,7 @@ npm run build
 npm run smoke
 npm run check:package
 npm run build:site
+npm run release:check
 ```
 
 离线测试覆盖协议字段、19 位 ID 精度、写请求不重试、会话权限、并发锁、操作回执、图片上传链路、Markdown 改写和 JSON 输出。`smoke` 额外访问公开接口，不使用登录凭据，也不执行远程写操作。
@@ -183,7 +196,9 @@ GitHub Actions 在 Node 22 和 24 上运行类型检查、离线测试与真实�
 
 ## 实现与许可
 
-`src/http.ts` 负责请求及错误边界；`src/client.ts` 封装掘金协议；`src/session.ts` 管理登录和写锁；`src/markdown.ts` 与 `src/drafts.ts` 处理文档及上传计划；`src/imagex.ts` 处理图片上传；`src/cli.ts` 负责命令参数与输出。
+项目按职责分层：`src/cli/` 注册业务命令并统一输出，`src/services/` 编排草稿、专栏和发布流程，`src/platform/juejin/` 封装平台协议，`src/runtime/` 管理会话、写锁和 Skill，`src/content/` 处理 Markdown。`src/cli.ts` 仅作为可执行入口。
+
+结构参考飞书官方 CLI 的命令、共享运行时、输出与技能分发边界，保持单 npm 包。目录树、依赖规则和扩展方式见 [架构设计](docs/ARCHITECTURE.md)；在自己电脑上首次发布与后续自动发布见 [发布指南](docs/RELEASING.md)。`npm run release:check` 会生成已经通过真实安装检查的归档，保存在 `release/`，不会登录或发布 npm。
 
 本项目使用社区整理及掘金网页当前使用的非官方接口，接口可能变化。会话文件等同账号凭据，请保存在本机，不放入仓库或 AI 对话。
 

@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { Cookie } from 'playwright';
-import { CliError } from './errors.js';
-import { JuejinHttp } from './http.js';
+import { CliError } from '../shared/errors.js';
+import { JuejinHttp } from '../platform/juejin/http.js';
 
 export function defaultHome(): string {
   return process.env.JUEJIN_HOME ?? join(homedir(), '.config', 'juejin-cli');

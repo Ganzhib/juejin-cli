@@ -4,6 +4,8 @@
 
 CLI 直接读取本地 Markdown，AI 无需把完整正文复制到命令参数。
 
+先调用 `juejin schema --json` 查看命令树；目标命令可用 `juejin schema article publish --json` 按需查询。元数据与命令实现来自同一份 Commander 注册定义，包含参数、必填选项、默认值和枚举。
+
 1. 用 `juejin auth status --json` 核对当前用户；未登录时由用户完成 `auth login` 浏览器操作。
 2. 用 `category list`、`tag search` 确认分类和标签。专栏写作先用 `column list --json` 选定专栏 ID，或显式创建专栏。
 3. 用 `draft create article.md --dry-run --json` 检查标题、摘要、分类、标签和本地图片。
@@ -30,7 +32,7 @@ const article = await client.publish(draft.id, [columns.items[0].column.column_i
 console.log(article.article_id);
 ```
 
-SDK 不会自动保存操作回执或获取写锁。调用方需要按自己的应用生命周期处理并发及结果未知的写操作；CLI 已统一完成这些处理。
+直接调用 `JuejinClient` 不会自动保存操作回执或获取写锁。调用方需要按自己的应用生命周期处理并发及结果未知的写操作；CLI 通过 `WritingService` 统一完成这些处理。需要相同的完整写作流程时，可组合 `SessionStore`、`ImageUploader`、`DraftService` 和 `WritingService`，具体依赖关系见 [架构设计](ARCHITECTURE.md)。
 
 公开读取不需要会话：
 

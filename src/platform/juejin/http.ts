@@ -1,4 +1,4 @@
-import { CliError } from './errors.js';
+import { CliError } from '../../shared/errors.js';
 import JSONbig from 'json-bigint';
 
 // Web responses include 19-digit numeric IDs. Preserve those tokens before JS rounds them.

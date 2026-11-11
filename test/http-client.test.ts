@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { JuejinHttp } from '../src/http.js';
-import { JuejinClient } from '../src/client.js';
-import { CliError } from '../src/errors.js';
+import { JuejinHttp } from '../src/platform/juejin/http.js';
+import { JuejinClient } from '../src/platform/juejin/client.js';
+import { CliError } from '../src/shared/errors.js';
 
 test('preserves numeric platform IDs above Number.MAX_SAFE_INTEGER', async () => {
   const http = new JuejinHttp({ fetch: async () => new Response('{"err_no":0,"data":{"tag_id":6809640357354012685,"count":12}}') });

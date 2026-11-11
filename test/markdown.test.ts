@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { scanImages, rewriteImages, readArticle, preflightImages, localImagePath } from '../src/markdown.js';
+import { scanImages, rewriteImages, readArticle, preflightImages, localImagePath } from '../src/content/markdown.js';
 
 test('rewrites image nodes while preserving code examples and ordinary text', async () => {
   const source = '# Title\n\n![chart](./chart.png "Chart")\n\n`![example](./chart.png)`\n\n```md\n![example](./chart.png)\n```\n\n./chart.png is an example filename.\n';

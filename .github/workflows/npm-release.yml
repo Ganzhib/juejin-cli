@@ -30,7 +30,8 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
-      - run: npm run check:package
+      - run: npm run build
+      - run: node scripts/check-package.mjs release
       # Configure this package's trusted publisher to Ganzhib/juejin-cli / npm-release.yml.
       # npm uses the GitHub OIDC identity; no reusable npm token is stored in the repository.
-      - run: npm publish --access public --provenance --registry=https://registry.npmjs.org/
+      - run: npm publish ./release/*.tgz --access public --provenance --registry=https://registry.npmjs.org/

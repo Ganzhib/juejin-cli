@@ -5,7 +5,7 @@ description: 使用 juejin CLI 查询稀土掘金文章、管理 Markdown 草稿
 
 # 掘金 CLI
 
-通过本机 `juejin` 命令操作掘金。先用 `juejin --help` 核对当前版本支持的命令，调用时使用 `--json`。成功结果在 stdout 的 `data` 中；失败结果在 stderr 的 `error` 中，并返回非零退出码。
+通过本机 `juejin` 命令操作掘金。先用 `juejin schema --json` 查看命令树，再用 `juejin schema article publish --json` 等查询目标命令的参数、必填项与枚举。调用时使用 `--json`。成功结果在 stdout 的 `data` 中；失败结果在 stderr 的 `error` 中，并返回非零退出码。
 
 ## 读取内容
 

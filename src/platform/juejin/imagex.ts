@@ -4,7 +4,7 @@ import { createHash, createHmac, randomInt } from 'node:crypto';
 import { readFile, stat } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import { crc32 } from 'node:zlib';
-import { CliError } from './errors.js';
+import { CliError } from '../../shared/errors.js';
 import { JuejinHttp, USER_AGENT } from './http.js';
 
 interface TemporaryToken { AccessKeyId: string; SecretAccessKey: string; SessionToken: string }

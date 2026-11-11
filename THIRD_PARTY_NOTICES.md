@@ -3,7 +3,7 @@
 ## liuleihang/juejin-skills
 
 The ImageX protocol, AWS SigV4 signing construction, CRC32 upload flow, and
-observed upload-host fallback in `src/imagex.ts` are adapted from:
+observed upload-host fallback in `src/platform/juejin/imagex.ts` are adapted from:
 
 https://github.com/liuleihang/juejin-skills/blob/main/scripts/upload-images.mjs
 

@@ -18,7 +18,7 @@
     "dist",
     "skills",
     "scripts/postinstall.mjs",
-    "docs/AI_USAGE.md",
+    "docs",
     "README.md",
     "THIRD_PARTY_NOTICES.md"
   ],
@@ -31,13 +31,14 @@
   "keywords": ["juejin", "cli", "agent", "skills", "markdown"],
   "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/build.mjs",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/*.test.ts",
     "dev": "tsx src/cli.ts",
     "smoke": "npm run build && node scripts/smoke.mjs",
     "check:package": "npm run build && node scripts/check-package.mjs",
     "build:site": "node scripts/build-site.mjs",
+    "release:check": "node scripts/release-check.mjs",
     "prepare": "npm run build",
     "postinstall": "node scripts/postinstall.mjs",
     "prepack": "npm run build"

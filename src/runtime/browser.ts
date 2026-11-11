@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { CliError } from './errors.js';
+import { CliError } from '../shared/errors.js';
 
 export async function installBrowser(verbose = false): Promise<void> {
   const require = createRequire(import.meta.url);

@@ -1,6 +1,9 @@
 # Development conventions
 
-- Trace the shared mechanism and affected call chain before changing behavior. Keep platform requests in `src/client.ts`, HTTP behavior in `src/http.ts`, and CLI presentation in `src/cli.ts`.
+- Trace the shared mechanism and affected call chain before changing behavior. Keep platform requests and types in `src/platform/juejin/`, HTTP behavior in its `http.ts`, and CLI presentation in `src/cli/`.
+- `src/cli.ts` is only the executable entry. Register domain commands in `src/cli/commands/`; assemble dependencies in `src/cli/context.ts`. Do not instantiate a process-global command tree.
+- Put write workflows in `src/services/writing-service.ts`, which owns read/merge/write locks and operation receipts. Keep Markdown parsing and replacement in `src/content/`, and sessions, browser setup and Skill installation in `src/runtime/`.
+- Generate command metadata from the same Commander definitions via `schema`; do not maintain a second command schema by hand. Use the package root from `src/package.ts` when locating bundled assets.
 - Trust typed successful platform responses. Handle business error codes and nullable `data` at the HTTP boundary; validate user files and command arguments at their input boundaries.
 - Never automatically replay writes after an exception or timeout. Preserve operation receipts and return existing draft/column IDs on failures.
 - Keep account cookies local, out of logs, fixtures, commits and upload-host requests. Offline tests must use fabricated credentials.

@@ -1,6 +1,6 @@
 import { access } from 'node:fs/promises';
 
-const installer = new URL('../dist/skills.js', import.meta.url);
+const installer = new URL('../dist/runtime/skills.js', import.meta.url);
 try {
   await access(installer);
 } catch (error) {

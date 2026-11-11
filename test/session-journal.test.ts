@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { SessionStore, parseCookies } from '../src/session.js';
-import { OperationJournal } from '../src/journal.js';
-import { CliError } from '../src/errors.js';
+import { SessionStore, parseCookies } from '../src/runtime/session.js';
+import { OperationJournal } from '../src/runtime/journal.js';
+import { CliError } from '../src/shared/errors.js';
 
 const imported = JSON.stringify([
   { name: 'sessionid', value: 'private', domain: '.juejin.cn' },

@@ -1,7 +1,7 @@
 import { mkdir, open } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { CliError } from './errors.js';
+import { CliError } from '../shared/errors.js';
 
 export class OperationJournal {
   private readonly operationId = randomUUID();

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, access } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, access, copyFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 const directory = await mkdtemp(join(tmpdir(), 'juejin-package-'));
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -12,7 +12,8 @@ function run(command, args, env = {}) {
 try {
   const [packed] = JSON.parse(run(npm, ['pack', '--json', '--ignore-scripts', '--pack-destination', directory]));
   const paths = new Set(packed.files.map(file => file.path));
-  for (const path of ['dist/cli.js', 'skills/juejin-cli/SKILL.md', 'skills/juejin-cli/references/scenarios.md', 'scripts/postinstall.mjs']) assert.ok(paths.has(path), `Missing ${path}`);
+  for (const path of ['dist/cli.js', 'dist/cli/program.js', 'dist/runtime/skills.js', 'skills/juejin-cli/SKILL.md', 'skills/juejin-cli/references/scenarios.md', 'scripts/postinstall.mjs']) assert.ok(paths.has(path), `Missing ${path}`);
+  assert.ok(!paths.has('dist/skills.js'), 'Stale modules must be removed by the clean build');
   assert.ok(![...paths].some(path => path.includes('session.json') || path.startsWith('output/')));
   const archive = join(directory, packed.filename);
   const prefix = join(directory, 'install');
@@ -24,6 +25,8 @@ try {
   const metadata = JSON.parse(await readFile(join(installed, 'package.json'), 'utf8'));
   assert.equal(run(process.execPath, [cli, '--version'], env).trim(), metadata.version);
   await access(join(skillsRoot, 'juejin-cli', 'SKILL.md'));
+  const schema = JSON.parse(run(process.execPath, [cli, 'schema', 'article', 'publish', '--json'], env));
+  assert.equal(schema.data.command.name, 'publish');
   const result = JSON.parse(run(process.execPath, [cli, 'skill', 'status', '--json'], env));
   assert.equal(result.data.state, 'installed');
   assert.equal(result.data.version, metadata.version);
@@ -31,6 +34,12 @@ try {
   await rm(skillsRoot, { recursive: true });
   run(process.execPath, [cli, '--help'], env);
   await access(join(skillsRoot, 'juejin-cli', 'SKILL.md'));
+  if (process.argv[2]) {
+    const destination = resolve(process.argv[2]);
+    await mkdir(destination, { recursive: true });
+    await copyFile(archive, join(destination, packed.filename));
+    console.log(`Verified archive: ${join(destination, packed.filename)}`);
+  }
   console.log(`PASS archive installation, executable, bundled Skill and first-run recovery (${metadata.version})`);
 } finally {
   await rm(directory, { recursive: true, force: true });

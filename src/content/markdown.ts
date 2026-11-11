@@ -4,8 +4,8 @@ import matter from 'gray-matter';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import type { Definition, Image, Nodes } from 'mdast';
-import { CliError } from './errors.js';
-import { validateImage } from './imagex.js';
+import { CliError } from '../shared/errors.js';
+import { validateImage } from '../platform/juejin/imagex.js';
 
 export interface ArticleMetadata { title?: string; brief?: string; category?: string; tags?: string[]; cover?: string }
 export interface MarkdownDocument { content: string; metadata: ArticleMetadata; directory: string }

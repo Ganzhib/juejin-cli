@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { ImageUploader } from '../src/imagex.js';
-import { JuejinHttp } from '../src/http.js';
+import { ImageUploader } from '../src/platform/juejin/imagex.js';
+import { JuejinHttp } from '../src/platform/juejin/http.js';
 
 test('uploads through STS/Apply/TOS/Commit/URL without leaking cookies to upload hosts', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'juejin-imagex-'));

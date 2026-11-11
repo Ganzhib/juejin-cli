@@ -2,13 +2,12 @@ import { createHash } from 'node:crypto';
 import { lstat, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { CliError } from './errors.js';
-import { PACKAGE_NAME, VERSION } from './package.js';
+import { CliError } from '../shared/errors.js';
+import { PACKAGE_NAME, PACKAGE_ROOT, VERSION } from '../package.js';
 
 export type SkillAgent = 'shared' | 'claude' | 'cursor';
 const SKILL_NAME = 'juejin-cli';
-const BUNDLED_SKILL = fileURLToPath(new URL('../skills/juejin-cli/', import.meta.url));
+const BUNDLED_SKILL = join(PACKAGE_ROOT, 'skills', 'juejin-cli');
 const RECEIPT = '.juejin-cli-install.json';
 interface SkillReceipt { package: string; version: string; files: Record<string, string> }
 export interface SkillStatus {

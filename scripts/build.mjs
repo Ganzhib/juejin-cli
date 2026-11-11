@@ -1,0 +1,7 @@
+import { execFileSync } from 'node:child_process';
+import { rm } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+await rm(new URL('../dist', import.meta.url), { recursive: true, force: true });
+execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '-p', 'tsconfig.json'], { stdio: 'inherit' });

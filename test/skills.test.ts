@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { installSkill, skillStatus } from '../src/skills.js';
+import { installSkill, skillStatus } from '../src/runtime/skills.js';
 import { VERSION } from '../src/package.js';
 
 test('installs a complete Skill once and leaves matching installations untouched', async () => {
