@@ -47,6 +47,10 @@ export function createProgram(options: ProgramOptions = {}): Command {
 export async function runCli(arguments_: string[], options: ProgramOptions = {}): Promise<number> {
   const json = arguments_.includes('--json');
   const program = createProgram({ ...options, jsonDiagnostics: json });
+  const started = Date.now();
+  const progress = json ? undefined : setInterval(() => {
+    (options.streams ?? process).stderr.write(`仍在处理，已等待 ${Math.round((Date.now() - started) / 1000)} 秒…\n`);
+  }, 5000);
   try {
     // Covers npx and installs made with lifecycle scripts disabled.
     if (!arguments_.includes('skill')) await autoInstallSkill({ quiet: json });
@@ -54,5 +58,7 @@ export async function runCli(arguments_: string[], options: ProgramOptions = {})
     return 0;
   } catch (error) {
     return new CliOutput(options.streams ?? process).failure(error, json);
+  } finally {
+    if (progress) clearInterval(progress);
   }
 }

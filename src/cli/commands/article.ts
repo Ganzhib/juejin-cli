@@ -1,11 +1,17 @@
 import { Option } from 'commander';
 import type { PublishOptions } from '../../services/writing-service.js';
 import type { CommandContext } from '../context.js';
-import { commaSeparated, id, paging, type Paging } from '../options.js';
+import { commaSeparated, draftOptions, id, paging, type Paging } from '../options.js';
+import type { SaveDraftOptions } from '../../services/writing-service.js';
 import { articleSummary } from '../presentation.js';
 
 export function registerArticle(context: CommandContext): void {
   const article = context.program.command('article').description('查询与发布文章');
+  draftOptions(article.command('publish-directory <directory>').description('预检目录内所有 Markdown，依次发布到同一专栏并保存进度'))
+    .requiredOption('--column <id>', '所有文章的目标专栏 ID', id)
+    .action(async (directory: string, options: SaveDraftOptions & { column: string }) => {
+      context.emit(await (await context.services(!options.dryRun)).writing.publishDirectory(directory, options));
+    });
   paging(article.command('search <keyword>')).addOption(new Option('--sort <sort>', '排序方式').choices(['relevance', 'newest', 'hottest']).default('relevance')).action(async (keyword: string, options: Paging & { sort: string }) => {
     const sort = ['relevance', 'newest', 'hottest'].indexOf(options.sort);
     const page = await (await context.services()).client.search(keyword, options.cursor, options.limit, sort);

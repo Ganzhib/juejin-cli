@@ -5,6 +5,8 @@ description: 使用 juejin CLI 查询稀土掘金文章、管理 Markdown 草稿
 
 # 掘金 CLI
 
+需要从原稿整理技术文章、识别适合的文章结构或自动补齐发布配置时，先读 [技术写作与发布指南](references/technical-writing.md)。固定 frontmatter 可复用 [TypeScript 模板](templates/typescript-article.md)，其他主题需查询对应标签，不能直接套用 TypeScript 标签。
+
 通过本机 `juejin` 命令操作掘金。先用 `juejin schema --json` 查看命令树，再用 `juejin schema article publish --json` 等查询目标命令的参数、必填项与枚举。调用时使用 `--json`。成功结果在 stdout 的 `data` 中；失败结果在 stderr 的 `error` 中，并返回非零退出码。
 
 ## 读取内容

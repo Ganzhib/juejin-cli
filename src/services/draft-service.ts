@@ -32,9 +32,9 @@ export class DraftService {
     const names = options.tags ?? document.metadata.tags ?? existing?.tag_ids;
     if (!names?.length) throw new CliError('INPUT', '至少需要一个标签（--tags 或 frontmatter.tags）。');
     const tagIds: string[] = [];
-    for (const name of names) {
+    for (const name of [...new Set(names)]) {
       if (/^\d+$/.test(name)) { tagIds.push(name); continue; }
-      const tags = await this.client.findTags(name);
+      const tags = await this.client.findTags(name, true);
       const tag = tags.find(tag => tag.tag_name.toLowerCase() === name.toLowerCase());
       if (!tag) throw new CliError('INPUT', `未找到精确标签「${name}」，请运行 juejin tag search。`);
       tagIds.push(tag.tag_id);

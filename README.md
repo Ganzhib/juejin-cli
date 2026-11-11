@@ -59,6 +59,15 @@ Skill 包含草稿、专栏、发布和热点选题示例，源码见 [skills/ju
 
 ## 发布到专栏
 
+开发版支持目录级发布（npm 0.1.0 尚不包含）：先按 [技术写作指南](skills/juejin-cli/references/technical-writing.md) 整理文章，复制 [frontmatter 模板](skills/juejin-cli/templates/typescript-article.md) 并填写实际内容，将待发布 `.md` 文件放在同一目录第一层。
+
+```bash
+juejin article publish-directory ./prepared --column COLUMN_ID --dry-run --json
+juejin article publish-directory ./prepared --column COLUMN_ID --json
+```
+
+所有文章会先预检，再逐篇创建草稿和发布到同一专栏。目录内的 `.juejin-batch.json` 保存进度，重复执行跳过已完成项；写入结果未知时停止，先通过 `history` 和远端状态核对。不要删除进度文件后盲目重试。修改文章或配置后，请先核对旧任务，再使用独立发布目录。
+
 先创建专栏或查看已有专栏，再创建文章草稿，最后把已有草稿发布到指定专栏：
 
 ```bash

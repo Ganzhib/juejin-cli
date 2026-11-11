@@ -99,3 +99,14 @@ test('tag search follows server cursors and reports a repeated cursor', async ()
   const stuck = new JuejinHttp({ fetch: async () => Response.json({ err_no: 0, data: [], cursor: '0', has_more: true }) });
   await assert.rejects(() => new JuejinClient(stuck).findTags('React'), /游标重复/);
 });
+
+test('exact tag resolution stops before requesting later pages', async () => {
+  let requests = 0;
+  const client = new JuejinClient(new JuejinHttp({ fetch: async () => {
+    requests++;
+    if (requests > 1) throw new Error('unnecessary page');
+    return Response.json({ err_no: 0, data: [{ tag: { tag_id: '123', tag_name: 'TypeScript' } }], cursor: 'next', has_more: true });
+  } }));
+  assert.equal((await client.findTags('typescript', true))[0]?.tag_id, '123');
+  assert.equal(requests, 1);
+});

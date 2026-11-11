@@ -13,7 +13,7 @@ export class JuejinClient {
     return { items: response.data.map(entry => entry.tag), cursor: response.cursor, has_more: response.has_more, count: response.count };
   }
 
-  async findTags(keyword: string): Promise<Tag[]> {
+  async findTags(keyword: string, exact = false): Promise<Tag[]> {
     const matches = new Map<string, Tag>();
     const cursors = new Set<string>();
     let cursor = '0';
@@ -23,6 +23,7 @@ export class JuejinClient {
       cursors.add(cursor);
       const page = await this.tags(cursor);
       for (const tag of page.items) {
+        if (exact && tag.tag_name.toLowerCase() === keyword.toLowerCase()) return [tag];
         if (tag.tag_name.toLowerCase().includes(keyword.toLowerCase())) matches.set(tag.tag_id, tag);
       }
       if (!page.has_more) return [...matches.values()];

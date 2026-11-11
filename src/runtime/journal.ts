@@ -26,7 +26,7 @@ export class OperationJournal {
       if (error instanceof CliError) {
         throw new CliError(error.code, error.message, { ...error.details, ...context, operation_id: this.operationId });
       }
-      throw error;
+      throw new CliError('INTERNAL', '写入未确认完成，请查询操作回执和远端状态后再决定是否重试。', { ...context, operation_id: this.operationId });
     }
     try {
       // Receipts contain IDs only, never article content or account credentials.
