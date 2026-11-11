@@ -10,13 +10,16 @@ import { ImageUploader, validateImage } from './imagex.js';
 import { OperationJournal } from './journal.js';
 import { localImagePath } from './markdown.js';
 import { SessionStore, cookieHeader, defaultHome, login, parseCookies, verifySession } from './session.js';
+import { autoInstallSkill, installSkill, skillDirectory, skillStatus, type SkillAgent } from './skills.js';
+import { VERSION } from './package.js';
+import { installBrowser } from './browser.js';
 
 interface Globals { json?: boolean; home: string }
 interface Paging { limit: number; cursor: string; page: number }
 interface DraftCommandOptions extends DraftOptions { dryRun?: boolean }
 
 const program = new Command();
-program.name('juejin').description('稀土掘金 CLI：文章、草稿、图片与专栏').version('0.1.0')
+program.name('juejin').description('稀土掘金 CLI：文章、草稿、图片与专栏').version(VERSION)
   .option('--json', '输出单行 JSON，错误也使用 JSON')
   .option('--home <directory>', '会话与操作记录目录', defaultHome())
   .showHelpAfterError().exitOverride();
@@ -82,7 +85,11 @@ function articleSummary(article: Article) {
 }
 
 const auth = program.command('auth').description('管理本地登录会话');
-auth.command('login').description('打开浏览器登录（先运行 npx playwright install chromium）').action(async () => {
+auth.command('setup').description('安装当前 CLI 版本使用的 Chromium').action(async () => {
+  await installBrowser(!program.opts<Globals>().json);
+  emit({ browser: 'chromium', installed: true });
+});
+auth.command('login').description('打开浏览器登录（先运行 juejin auth setup）').action(async () => {
   const session = store();
   emit(await session.withWriteLock(() => login(session)));
 });
@@ -241,7 +248,20 @@ program.command('history').description('本地写操作回执（含结果未知�
   emit(content.trim().split('\n').filter(Boolean).slice(-options.limit).map(line => JSON.parse(line)));
 });
 
+const skill = program.command('skill').description('安装随 CLI 分发的 Agent Skill');
+function skillOptions(command: Command): Command {
+  return command.addOption(new Option('--agent <agent>', 'shared 适用于 Codex/Cursor，claude 用于 Claude Code').choices(['shared', 'claude', 'cursor']).default('shared'))
+    .option('--dir <directory>', '自定义 skills 根目录');
+}
+function skillTarget(options: { agent: SkillAgent; dir?: string }): string {
+  return options.dir ? join(resolve(options.dir), 'juejin-cli') : skillDirectory(options.agent);
+}
+skillOptions(skill.command('install')).action(async (options: { agent: SkillAgent; dir?: string }) => emit(await installSkill(skillTarget(options))));
+skillOptions(skill.command('status')).action(async (options: { agent: SkillAgent; dir?: string }) => emit(await skillStatus(skillTarget(options))));
+
 try {
+  // Also works with npx and --ignore-scripts installs; never pollute JSON diagnostics.
+  if (!process.argv.includes('skill')) await autoInstallSkill({ quiet: process.argv.includes('--json') });
   await program.parseAsync();
 } catch (error) {
   if (error instanceof CommanderError && error.exitCode === 0) process.exitCode = 0;

@@ -18,7 +18,7 @@ CLI 直接读取本地 Markdown，AI 无需把完整正文复制到命令参数�
 ## TypeScript SDK
 
 ```typescript
-import { JuejinClient, JuejinHttp, SessionStore, cookieHeader } from '@ganzhib/juejin-cli';
+import { JuejinClient, JuejinHttp, SessionStore, cookieHeader } from '@ganzhibin/juejin-cli';
 
 const session = new SessionStore();
 const cookies = await session.load();

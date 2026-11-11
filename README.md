@@ -4,7 +4,14 @@
 
 ## 安装
 
-需要 Node.js **22.16+**。目前为源码版本，尚未发布到 npm。
+需要 Node.js **22.16+**。安装指南、场景与可复制提示词：[GitHub Pages](https://ganzhib.github.io/juejin-cli/)。
+
+```bash
+npm install -g @ganzhibin/juejin-cli
+juejin --help
+```
+
+或直接运行 `npx @ganzhibin/juejin-cli --help`。从源码安装：
 
 ```bash
 git clone https://github.com/Ganzhib/juejin-cli.git
@@ -19,7 +26,7 @@ juejin --help
 首次浏览器登录前安装 Chromium：
 
 ```bash
-npx playwright install chromium
+juejin auth setup
 juejin auth login
 juejin auth status --json
 ```
@@ -32,6 +39,21 @@ juejin auth status --json
 juejin auth import --file /path/to/storage-state.json
 juejin auth logout
 ```
+
+## Agent Skill 自动安装
+
+Skill 随 CLI 的 npm 包一起下载，内容与当前 CLI 版本对应，不额外从 GitHub 拉取不匹配的最新版。安装脚本会自动安装到 `~/.agents/skills/juejin-cli/`，供 Codex 与 Cursor 发现；检测到 `~/.claude/` 时，也会安装到 Claude Code 的技能目录。使用 npx 或禁用安装脚本时，首次运行 CLI 会自动补装。
+
+```bash
+juejin skill status --json
+juejin skill install --agent claude --json
+juejin skill install --agent cursor --json
+juejin skill install --dir /path/to/skills --json
+```
+
+安装器会识别本包管理的版本并按需更新；已有自定义或手动修改过的同名 Skill 会保留。设置 `JUEJIN_AUTO_INSTALL_SKILL=0` 可关闭自动安装，`JUEJIN_SKILLS_DIR` 可指定 skills 根目录。新安装的 Skill 未出现在 Agent 中时，重新开启会话。
+
+Skill 包含草稿、专栏、发布和热点选题示例，源码见 [skills/juejin-cli](skills/juejin-cli)。
 
 ## 发布到专栏
 
@@ -151,12 +173,13 @@ npm run check
 npm test
 npm run build
 npm run smoke
-npm pack --dry-run
+npm run check:package
+npm run build:site
 ```
 
 离线测试覆盖协议字段、19 位 ID 精度、写请求不重试、会话权限、并发锁、操作回执、图片上传链路、Markdown 改写和 JSON 输出。`smoke` 额外访问公开接口，不使用登录凭据，也不执行远程写操作。
 
-GitHub Actions 在 Node 22 和 24 上运行类型检查、离线测试与打包检查。登录、真实图片上传、创建草稿、创建/修改专栏和发布需要在自己的账号上进一步验证；离线测试通过不等于这些写入已实测成功。接口依据与验证状态见 [API 记录](docs/API.md)。
+GitHub Actions 在 Node 22 和 24 上运行类型检查、离线测试与真实归档安装检查。后者从 tgz 安装 CLI，验证可执行入口、Skill 安装及首次运行补装。登录、真实图片上传、创建草稿、创建/修改专栏和发布需要在自己的账号上进一步验证；离线测试通过不等于这些写入已实测成功。接口依据与验证状态见 [API 记录](docs/API.md)。
 
 ## 实现与许可
 

@@ -6,3 +6,4 @@ export { CliError } from './errors.js';
 export { SessionStore, cookieHeader } from './session.js';
 export { ImageUploader } from './imagex.js';
 export { DraftService } from './drafts.js';
+export { installSkill, skillStatus } from './skills.js';

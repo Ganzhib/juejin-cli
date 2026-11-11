@@ -1,0 +1,36 @@
+name: npm release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+env:
+  JUEJIN_AUTO_INSTALL_SKILL: '0'
+jobs:
+  publish:
+    if: github.repository == 'Ganzhib/juejin-cli' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Match immutable tag to package version
+        run: test "$GITHUB_REF_NAME" = "v$(node -p "require('./package.json').version")"
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run check:package
+      # Configure this package's trusted publisher to Ganzhib/juejin-cli / npm-release.yml.
+      # npm uses the GitHub OIDC identity; no reusable npm token is stored in the repository.
+      - run: npm publish --access public --provenance --registry=https://registry.npmjs.org/

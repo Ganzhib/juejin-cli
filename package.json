@@ -1,5 +1,5 @@
 {
-  "name": "@ganzhib/juejin-cli",
+  "name": "@ganzhibin/juejin-cli",
   "version": "0.1.0",
   "description": "A scriptable Juejin CLI for humans and AI agents",
   "type": "module",
@@ -16,6 +16,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
+    "skills",
+    "scripts/postinstall.mjs",
     "docs/AI_USAGE.md",
     "README.md",
     "THIRD_PARTY_NOTICES.md"
@@ -24,13 +26,20 @@
     "type": "git",
     "url": "https://github.com/Ganzhib/juejin-cli.git"
   },
+  "homepage": "https://ganzhib.github.io/juejin-cli/",
+  "bugs": { "url": "https://github.com/Ganzhib/juejin-cli/issues" },
+  "keywords": ["juejin", "cli", "agent", "skills", "markdown"],
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/*.test.ts",
     "dev": "tsx src/cli.ts",
     "smoke": "npm run build && node scripts/smoke.mjs",
+    "check:package": "npm run build && node scripts/check-package.mjs",
+    "build:site": "node scripts/build-site.mjs",
     "prepare": "npm run build",
+    "postinstall": "node scripts/postinstall.mjs",
     "prepack": "npm run build"
   },
   "dependencies": {

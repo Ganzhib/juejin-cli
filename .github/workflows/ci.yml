@@ -5,6 +5,8 @@ on:
   pull_request:
 permissions:
   contents: read
+env:
+  JUEJIN_AUTO_INSTALL_SKILL: '0'
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -20,5 +22,5 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
-      - run: npm pack --dry-run
+      - run: npm run check:package
       - run: node dist/cli.js --help

@@ -7,3 +7,5 @@ coverage/
 session.json
 storage-state.json
 .juejin-cli/
+output/
+site-dist/
