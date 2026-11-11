@@ -6,7 +6,7 @@
 
 需要 Node.js **22.16+**。安装指南、场景与可复制提示词：[GitHub Pages](https://ganzhib.github.io/juejin-cli/)。
 
-当前首个 npm 版本待维护者发布；发布前请使用下方的源码安装方式。发布后可执行：
+从 npm 安装：
 
 ```bash
 npm install -g @ganzhibin/juejin-cli
