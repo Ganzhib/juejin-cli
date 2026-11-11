@@ -20,7 +20,7 @@ try {
   const archive = join(directory, packed.filename);
   const prefix = join(directory, 'install');
   const skillsRoot = join(directory, 'skills');
-  const env = { JUEJIN_AUTO_INSTALL_SKILL: '1', JUEJIN_SKILLS_DIR: skillsRoot };
+  const env = { JUEJIN_AUTO_INSTALL_SKILL: '1', JUEJIN_SKILLS_DIR: skillsRoot, JUEJIN_AUTO_UPDATE: '0' };
   run(process.execPath, [npm, 'install', '--prefix', prefix, '--omit=dev', '--no-audit', '--no-fund', archive], env);
   const installed = join(prefix, 'node_modules', ...packed.name.split('/'));
   const cli = join(installed, 'dist', 'cli.js');

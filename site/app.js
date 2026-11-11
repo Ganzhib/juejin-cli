@@ -1,11 +1,11 @@
 const installCommands = {
-  npm: "npm install -g {{PACKAGE_NAME}}\njuejin --help",
-  npx: "npx {{PACKAGE_NAME}} --help",
+  npm: "npm install -g {{PACKAGE_NAME}}@latest\njuejin --help",
+  npx: "npx --yes {{PACKAGE_NAME}}@latest --help",
   source:
     "git clone https://github.com/Ganzhib/juejin-cli.git\ncd juejin-cli\nnpm ci\nnpm link",
 };
 const installNotes = {
-  npm: "Skill 随 npm 包一起下载；安装时自动写入 Agent 技能目录。",
+  npm: "安装最新版，之后启动时自动更新。写作与 draw.io 绘图 Skill 一并安装。",
   npx: "无需全局安装。首次运行会自动安装配套 Skill。",
   source: "从源码构建后，首次运行 juejin 会自动安装配套 Skill。",
 };
@@ -102,9 +102,10 @@ async function copyText(text, button) {
     document.querySelector("#copy-status").textContent =
       "已复制，可以粘贴到终端或 Agent。";
   } catch {
-    if (button.id === "copy-prompt") {
-      promptText.focus();
-      promptText.select();
+    const fallback = button.id === 'copy-setup-prompt' ? document.querySelector('#setup-prompt') : promptText;
+    if (['copy-prompt', 'copy-setup-prompt'].includes(button.id)) {
+      fallback.focus();
+      fallback.select();
     }
     document.querySelector("#copy-status").textContent =
       "浏览器未允许复制，请手动选择文本复制。";
@@ -112,9 +113,8 @@ async function copyText(text, button) {
 }
 for (const button of document.querySelectorAll("[data-copy], [data-text]")) {
   button.addEventListener("click", () => {
-    const text =
-      button.dataset.text ??
-      document.getElementById(button.dataset.copy).textContent;
+    const source = document.getElementById(button.dataset.copy);
+    const text = button.dataset.text ?? source?.value ?? source?.textContent;
     void copyText(text, button);
   });
 }
@@ -127,3 +127,22 @@ document
 articlePath.addEventListener("input", updatePrompt);
 columnName.addEventListener("input", updatePrompt);
 updatePrompt();
+
+// Only display versions which npm actually makes available, regardless of Pages deployment timing.
+async function showLatestRelease() {
+  try {
+    const response = await fetch('https://registry.npmjs.org/' + encodeURIComponent('{{PACKAGE_NAME}}') + '/latest',
+      { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    if (!response.ok) return;
+    const release = await response.json();
+    if (release.name !== '{{PACKAGE_NAME}}' || !/^\d+\.\d+\.\d+$/.test(release.version)) return;
+    document.querySelector('#latest-version').textContent = 'v' + release.version;
+    document.querySelector('#footer-version').textContent = 'v' + release.version;
+    const archive = new URL(release.dist.tarball);
+    if (archive.origin !== 'https://registry.npmjs.org') return;
+    const download = document.querySelector('#latest-download');
+    download.href = archive.href;
+    download.textContent = '下载最新版安装包 · v' + release.version + ' ↗';
+  } catch { /* @latest installation and the npm fallback link remain usable. */ }
+}
+void showLatestRelease();

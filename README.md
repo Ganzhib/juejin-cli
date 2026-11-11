@@ -11,11 +11,17 @@
 从 npm 安装：
 
 ```bash
-npm install -g @ganzhibin/juejin-cli
+npm install -g @ganzhibin/juejin-cli@latest
 juejin --help
 ```
 
-或直接运行 `npx @ganzhibin/juejin-cli --help`。从源码安装：
+或直接运行 `npx --yes @ganzhibin/juejin-cli@latest --help`。官网安装区提供「复制给 AI，帮我装好」，适合把环境检查、安装与登录准备交给本机 Agent。
+
+从 0.2.1 起，已安装 CLI 在业务操作前自动检查并使用最新稳定版；更新保存在用户缓存，无需管理员权限。成功检查结果复用 1 分钟，连续执行命令不反复查询 npm；网络检查最多等待 1.5 秒。下载失败继续使用已有版本，业务命令启动后绝不回退重放。JSON 输出保持干净。固定版本脚本可设置 `JUEJIN_AUTO_UPDATE=0`；源码、CI 和 npx 显式版本不会自动切换。0.2.0 及更早版本需先手动执行上面的安装命令一次。
+
+推送 `main` 自动验收、递增 patch 并发布 npm，同一提交重跑会跳过；官网版本和下载地址以 npm 已发布的 `latest` 为准。配置及故障恢复见 [发布指南](docs/RELEASING.md)。
+
+从源码安装：
 
 ```bash
 git clone https://github.com/Ganzhib/juejin-cli.git

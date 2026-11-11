@@ -1,7 +1,7 @@
 name: npm release
 on:
   push:
-    tags: ['v*']
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -10,11 +10,12 @@ concurrency:
   cancel-in-progress: false
 env:
   JUEJIN_AUTO_INSTALL_SKILL: '0'
+  JUEJIN_AUTO_UPDATE: '0'
 jobs:
   publish:
-    if: github.repository == 'Ganzhib/juejin-cli' && github.ref_type == 'tag'
+    if: github.repository == 'Ganzhib/juejin-cli' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write
@@ -25,13 +26,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Match immutable tag to package version
-        run: test "$GITHUB_REF_NAME" = "v$(node -p "require('./package.json').version")"
-      - run: npm ci
-      - run: npm run check
-      - run: npm test
-      - run: npm run build
-      - run: node scripts/check-package.mjs release
-      # Configure this package's trusted publisher to Ganzhib/juejin-cli / npm-release.yml.
-      # npm uses the GitHub OIDC identity; no reusable npm token is stored in the repository.
-      - run: npm publish ./release/*.tgz --access public --provenance --registry=https://registry.npmjs.org/
+          cache: npm
+      - name: Select version or recognize an already published commit
+        id: release
+        run: node scripts/release-version.mjs
+      - if: steps.release.outputs.publish == 'true'
+        run: npm ci
+      - if: steps.release.outputs.publish == 'true'
+        run: npm run release:check
+      - if: steps.release.outputs.publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-${{ steps.release.outputs.version }}
+          path: ${{ steps.release.outputs.archive }}
+      # Publish exactly the archive which passed checks and a clean installation.
+      - name: Publish verified archive with npm trusted publishing
+        if: steps.release.outputs.publish == 'true'
+        env:
+          RELEASE_ARCHIVE: ${{ steps.release.outputs.archive }}
+        run: npm publish "$RELEASE_ARCHIVE" --access public --provenance --registry=https://registry.npmjs.org/
+      - name: Confirm public npm latest
+        if: steps.release.outputs.publish == 'true'
+        run: node scripts/verify-published.mjs

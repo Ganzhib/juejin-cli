@@ -15,6 +15,11 @@
   </head>
   <body>
     <a class="skip-link" href="#main">跳到正文</a>
+    <a class="studio-banner" href="https://my.feishu.cn/wiki/Tj4ZwTpEUisrg3kojmbcnR9yn1I?create_from=create_doc_to_wiki" target="_blank" rel="noopener noreferrer" aria-label="淘气工作室：给 AI 找点新活，打开工具箱（新窗口）">
+      <span class="banner-mascot" aria-hidden="true"><span>•</span>ᴗ<span>•</span></span>
+      <span class="banner-copy"><strong>你的 AI，又在等你派活？</strong><span class="banner-detail">淘气工作室 · 给它找点新本事</span></span>
+      <span class="banner-cta">打开工具箱 <span aria-hidden="true">↗</span></span>
+    </a>
     <header class="header wrap">
       <a class="brand" href="#" aria-label="juejin CLI 首页"
         ><span class="brand-icon" aria-hidden="true">j_</span> juejin<span
@@ -39,7 +44,7 @@
         <div class="hero-copy">
           <div class="eyebrow">
             <span class="status-dot"></span> 为你的 AI Agent 准备
-            <span class="version">v{{VERSION}}</span>
+            <span class="version" id="latest-version">npm latest</span>
           </div>
           <h1>把掘金写作，<br />接入你的 <span>Agent。</span></h1>
           <p class="hero-description">
@@ -102,6 +107,19 @@
           <p>Node.js 22.16+<br />支持 macOS、Linux 与 Windows<br />可通过 npm 全局安装或用 npx 即用。</p>
         </div>
         <div class="install-layout">
+          <div class="ai-setup-panel">
+            <div class="ai-setup-heading">
+              <div><span class="small-badge">新手推荐 · 让 AI 动手</span><h3>不会敲命令？复制这一段就好。</h3></div>
+              <button class="button primary" id="copy-setup-prompt" data-copy="setup-prompt">复制给 AI，帮我装好 <span aria-hidden="true">↗</span></button>
+            </div>
+            <p>粘贴给能操作本机终端的 AI，例如 Codex、Cursor 或 Claude Code。安装、检查交给它；需要登录时，你在浏览器完成验证。</p>
+            <label class="sr-only" for="setup-prompt">安装与初始化提示词</label>
+            <textarea id="setup-prompt" rows="5" readonly>请直接帮我安装并配置 juejin-cli，让我之后可以用自然语言管理掘金草稿和专栏。
+项目官网：https://ganzhib.github.io/juejin-cli/
+开源仓库：https://github.com/Ganzhib/juejin-cli
+先检查我的操作系统、Node.js 和 npm；需要 Node.js 22.16+，优先使用兼容的 LTS 版本。然后执行 npm install -g {{PACKAGE_NAME}}@latest，遇到权限或路径问题请诊断原因，不要反复重试。核验 juejin --version 和 juejin schema --json，检查 juejin skill status --json 与 juejin skill status --name drawio-skill --json；缺少技能时安装对应内置 Skill，保留我已有的自定义文件，并读取本地 SKILL.md。检查 juejin auth status --json；如未登录，先完成 juejin auth setup，再启动 juejin auth login，引导我在打开的浏览器验证，完成后重新核验账号。不要索取或展示我的 Cookie、密码和验证码。最后用普通话告诉我是否装好、登录的是哪个账号，并给出一条“把我的 Markdown 保存为草稿”的使用示例。本次只安装和配置，不创建测试文章、不对外发布。若你不能操作我的电脑，请明确说明，并告诉我该把这段话交给哪个具备本机终端能力的 AI。</textarea>
+            <span class="setup-reassurance">复制 → 发给 AI → 跟着完成登录 → 开始写作</span>
+          </div>
           <div class="install-panel">
             <div class="tabs" role="tablist" aria-label="安装方式">
               <button
@@ -148,12 +166,13 @@
                   复制命令
                 </button>
               </div>
-              <pre><code id="install-command">npm install -g {{PACKAGE_NAME}}
+              <pre><code id="install-command">npm install -g {{PACKAGE_NAME}}@latest
 juejin --help</code></pre>
             </div>
             <p class="install-note" id="install-note">
-              写作与 draw.io 绘图 Skill 随 npm 包一起下载；安装时自动写入 Agent 技能目录。
+              安装最新版，之后启动时自动更新。写作与 draw.io 绘图 Skill 一并安装。
             </p>
+            <a id="latest-download" class="latest-download" href="https://www.npmjs.com/package/{{PACKAGE_NAME}}" target="_blank" rel="noopener noreferrer">在 npm 查看最新版 ↗</a>
           </div>
           <aside class="skill-panel">
             <span class="small-badge">SKILL INCLUDED</span>
@@ -464,7 +483,7 @@ juejin history --json</pre>
           target="_blank"
           rel="noreferrer"
           >npm ↗</a
-        ><span>MIT · v{{VERSION}}</span>
+        ><span>MIT · <span id="footer-version">npm latest</span></span>
       </div>
     </footer>
     <div id="copy-status" class="toast" role="status" aria-live="polite"></div>
