@@ -2,7 +2,7 @@
 
 ## 可复制的文章模板
 
-复制 [TypeScript 文章模板](../templates/typescript-article.md) 为自己的 `article.md`，替换标题、摘要和正文。摘要保持 50–100 字。模板使用已验证的 TypeScript 标签 ID（按字符串保存），省去标签名称分页查找；其他主题请先用 `juejin tag search` 查询相应标签。分类仍会验证。
+可选复制 [空白元数据骨架](../templates/article.md) 为自己的 `article.md`。先阅读本地 [写作原则](editorial-principles.md)，根据素材生成标题、50–100 字摘要和正文；不强制章节结构。标签按主题查询并使用字符串 ID，后续保存可直接复用，减少名称查找。
 
 只存草稿：
 

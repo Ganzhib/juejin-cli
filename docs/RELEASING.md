@@ -1,6 +1,6 @@
 # 发布指南
 
-当前包名为 `@ganzhibin/juejin-cli`，首版版本为 `0.1.0`。npm 发布由维护者在自己的电脑完成。仓库已经部署 [GitHub Pages 安装与场景指南](https://ganzhib.github.io/juejin-cli/)。
+当前包名为 `@ganzhibin/juejin-cli`，当前版本为 `0.2.0`。npm 发布由维护者在自己的电脑完成。仓库已经部署 [GitHub Pages 安装与场景指南](https://ganzhib.github.io/juejin-cli/)。
 
 ## 首次手动发布
 
@@ -16,9 +16,9 @@ npm whoami --registry=https://registry.npmjs.org/
 确认账号有 `@ganzhibin` scope 的发布权限。`release:check` 依次运行类型检查、离线测试、干净构建、真实归档安装验证及站点构建。它不会登录或发布。通过后发布该次验证生成的确切文件：
 
 ```bash
-npm publish ./release/ganzhibin-juejin-cli-0.1.0.tgz --access public --registry=https://registry.npmjs.org/
+npm publish ./release/ganzhibin-juejin-cli-0.2.0.tgz --access public --registry=https://registry.npmjs.org/
 npm view @ganzhibin/juejin-cli version --registry=https://registry.npmjs.org/
-npx --yes @ganzhibin/juejin-cli@0.1.0 --version
+npx --yes @ganzhibin/juejin-cli@0.2.0 --version
 ```
 
 按 npm 提示完成浏览器登录与二次验证。版本号更新后改用新版本的归档文件名；不要用通配符选择本地 `release/` 中多个历史版本。不要把登录凭据提交到仓库。

@@ -40,7 +40,7 @@ export class WritingService {
     try {
       try { state = JSON.parse(await readFile(checkpoint, 'utf8')); }
       catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw new CliError('INPUT', '批量进度文件无法读取，请先核对已有操作回执。'); }
-      if (state.digest !== digest || !Array.isArray(state.items)) throw new CliError('INPUT', '文章或配置与已有批量任务不同，请使用新目录并先核对旧任务结果。');
+      if (!state || typeof state !== 'object' || state.digest !== digest || !Array.isArray(state.items)) throw new CliError('INPUT', '文章或配置与已有批量任务不同，请使用新目录并先核对旧任务结果。');
       if (state.items.some(item => !item || !files.includes(item.file) || !['creating', 'draft', 'publishing', 'done'].includes(item.phase) || (item.draft_id !== undefined && !/^\d+$/.test(item.draft_id)) || (item.phase === 'done' && !/^\d+$/.test(item.article_id ?? ''))) || new Set(state.items.map(item => item.file)).size !== state.items.length) throw new CliError('INPUT', '批量进度文件格式不正确，请核对操作回执。');
       if (state.items.some(item => item.phase === 'creating' || item.phase === 'publishing')) throw new CliError('INPUT', '上次写入结果尚未确认，请先用 history 核对；不会自动重放写入。', { checkpoint });
       const pending = files.filter(file => !state.items.some(item => item.file === file && item.phase === 'done'));

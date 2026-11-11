@@ -107,7 +107,18 @@ export class ImageUploader {
       Action: 'CommitImageUpload', Version: '2018-08-01', ServiceId: SERVICE_ID, SessionKey: address.SessionKey,
     }, 'POST');
     if (committed.Results[0]?.UriStatus !== 2000) throw new CliError('API', 'ImageX 未确认图片提交成功。');
-    const result = await this.http.data<{ main_url: string }>(`/imagex/v2/get_img_url?aid=2608&uuid=${uuid}&uri=${encodeURIComponent(store.StoreUri)}&img_type=private`);
+    try {
+      return await this.resolveUrl(store.StoreUri);
+    } catch (error) {
+      const failure = error instanceof CliError ? error : new CliError('INTERNAL', '图片地址获取失败。');
+      throw new CliError(failure.code, '图片已提交成功，但地址获取失败；使用 image resolve 查询已有图片，不要重新上传。', { ...failure.details, file: path, uri: store.StoreUri, upload_status: 'committed' });
+    }
+  }
+
+  async resolveUrl(uri: string): Promise<string> {
+    if (!uri.trim() || uri.length > 2048 || /[\s\u0000-\u001f]/.test(uri)) throw new CliError('INPUT', '请提供上传结果中的有效图片 URI。');
+    const uuid = `${Date.now()}${randomInt(100000, 1000000)}`;
+    const result = await this.http.data<{ main_url: string }>(`/imagex/v2/get_img_url?aid=2608&uuid=${uuid}&uri=${encodeURIComponent(uri)}&img_type=private`);
     return result.main_url;
   }
 }

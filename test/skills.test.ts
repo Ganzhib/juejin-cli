@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { installSkill, skillStatus } from '../src/runtime/skills.js';
 import { VERSION } from '../src/package.js';
+import { PACKAGE_ROOT } from '../src/package.js';
 
 test('installs a complete Skill once and leaves matching installations untouched', async () => {
   const home = await mkdtemp(join(tmpdir(), 'juejin-skill-'));
@@ -42,4 +43,17 @@ test('does not take over a same-named skill created outside this package', async
     await assert.rejects(() => installSkill(target), /已有自定义 Skill/);
     assert.equal(await readFile(join(target, 'SKILL.md'), 'utf8'), 'Existing skill');
   } finally { await rm(home, { recursive: true }); }
+});
+
+test('bundled drawio installs scripts and binary data without changing bytes', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'juejin-drawio-'));
+  try {
+    const target = join(home, 'drawio-skill');
+    await installSkill(target, 'drawio-skill');
+    assert.deepEqual(await readFile(join(target, 'data/shape-index.json.gz')), await readFile(join(PACKAGE_ROOT, 'skills/drawio-skill/data/shape-index.json.gz')));
+    assert.ok((await readFile(join(target, 'scripts/validate.py'), 'utf8')).length > 0);
+    assert.equal((await skillStatus(target)).state, 'installed');
+    await writeFile(join(target, 'SKILL.md'), 'custom drawio');
+    await assert.rejects(installSkill(target, 'drawio-skill'), /已有自定义 Skill/);
+  } finally { await rm(home, { recursive: true, force: true }); }
 });

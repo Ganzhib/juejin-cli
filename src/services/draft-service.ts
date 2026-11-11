@@ -2,7 +2,7 @@ import { JuejinClient } from '../platform/juejin/client.js';
 import type { Draft, DraftInput } from '../platform/juejin/types.js';
 import { CliError } from '../shared/errors.js';
 import { ImageUploader } from '../platform/juejin/imagex.js';
-import { inferredTitle, localImagePath, preflightImages, readArticle, rewriteImages, scanImages } from '../content/markdown.js';
+import { inferredTitle, localImagePath, preflightImages, readArticle, rewriteImages, scanImages, omitRepeatedTitle } from '../content/markdown.js';
 
 export interface DraftOptions {
   title?: string; brief?: string; category?: string; tags?: string[]; cover?: string;
@@ -44,7 +44,7 @@ export class DraftService {
     const localCover = cover ? localImagePath(cover, document.directory) : undefined;
     await preflightImages(images, localCover);
     return {
-      input: { title, brief_content: brief, category_id: matched.category_id, tag_ids: [...new Set(tagIds)], cover_image: cover, mark_content: document.content },
+      input: { title, brief_content: brief, category_id: matched.category_id, tag_ids: [...new Set(tagIds)], cover_image: cover, mark_content: omitRepeatedTitle(document.content, title) },
       directory: document.directory,
       localImages: [...new Set(images.map(image => image.path))], localCover,
     };

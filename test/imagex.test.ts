@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ImageUploader } from '../src/platform/juejin/imagex.js';
 import { JuejinHttp } from '../src/platform/juejin/http.js';
+import { CliError } from '../src/shared/errors.js';
 
 test('uploads through STS/Apply/TOS/Commit/URL without leaking cookies to upload hosts', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'juejin-imagex-'));
@@ -38,5 +39,18 @@ test('uploads through STS/Apply/TOS/Commit/URL without leaking cookies to upload
     const http = new JuejinHttp({ cookie: 'sessionid=account-secret', fetch: fetchMock });
     assert.equal(await new ImageUploader(http, fetchMock).upload(file), 'https://cdn.example/image.png');
     assert.deepEqual(calls, ['/imagex/v2/gen_token:', '/:ApplyImageUpload', '/image/path:', '/:CommitImageUpload', '/imagex/v2/get_img_url:']);
+    const failingUrl: typeof fetch = async (url, init) => {
+      if (String(url).includes('get_img_url')) throw new Error('timeout');
+      return fetchMock(url, init);
+    };
+    const failingUploader = new ImageUploader(new JuejinHttp({ cookie: 'sessionid=account-secret', fetch: failingUrl }), failingUrl);
+    await assert.rejects(failingUploader.upload(file), (error: CliError) => {
+      assert.equal(error.details?.uri, 'image/path');
+      assert.equal(error.details?.upload_status, 'committed');
+      return true;
+    });
+    calls.length = 0;
+    assert.equal(await new ImageUploader(http, fetchMock).resolveUrl('image/path'), 'https://cdn.example/image.png');
+    assert.deepEqual(calls, ['/imagex/v2/get_img_url:']);
   } finally { await rm(directory, { recursive: true }); }
 });

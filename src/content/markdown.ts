@@ -11,6 +11,16 @@ export interface ArticleMetadata { title?: string; brief?: string; category?: st
 export interface MarkdownDocument { content: string; metadata: ArticleMetadata; directory: string }
 export interface LocalImage { path: string; url: string; node: Image | Definition }
 
+export function omitRepeatedTitle(content: string, title: string): string {
+  const first = fromMarkdown(content).children[0];
+  if (first?.type !== 'heading' || first.depth !== 1) return content;
+  let label = '';
+  visit(first, node => { if (node.type === 'text' || node.type === 'inlineCode') label += node.value; });
+  const normalize = (value: string) => value.trim().replace(/\s+/g, ' ');
+  if (normalize(label) !== normalize(title)) return content;
+  return content.slice(first.position!.end.offset!).replace(/^\s*\r?\n/, '');
+}
+
 function visit(node: Nodes, callback: (node: Nodes) => void): void {
   callback(node);
   if ('children' in node) for (const child of node.children) visit(child, callback);

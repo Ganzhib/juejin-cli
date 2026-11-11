@@ -1,6 +1,6 @@
 # 技术文章整理与发布配置
 
-本指南参考用户提供的 [CatBuddy 掘金专栏写作规范](https://github.com/Ganzhib/catbuddy/blob/book/book/00-WRITING-GUIDE.md)，提炼为适用于不同项目的写作流程；不继承 CatBuddy 的专栏名称和编号。
+动笔前读取本地 [写作原则](editorial-principles.md)。根据读者的问题和已有素材决定结构，不要求每篇使用固定标题或章节顺序。
 
 ## 先识别文章类型
 

@@ -15,5 +15,6 @@ for (const name of ["index.html", "app.js"]) {
 await mkdir(join(output, "examples"), { recursive: true });
 await cp("examples/article.md", join(output, "examples/article.md"));
 await cp("skills/juejin-cli", join(output, "skill"), { recursive: true });
+await cp("skills/drawio-skill", join(output, "drawio-skill"), { recursive: true });
 await writeFile(join(output, ".nojekyll"), "");
 console.log(`Built GitHub Pages for ${metadata.name}@${metadata.version}`);

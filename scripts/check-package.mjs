@@ -15,6 +15,7 @@ try {
   const paths = new Set(packed.files.map(file => file.path));
   for (const path of ['dist/cli.js', 'dist/cli/program.js', 'dist/runtime/skills.js', 'skills/juejin-cli/SKILL.md', 'skills/juejin-cli/references/scenarios.md', 'scripts/postinstall.mjs']) assert.ok(paths.has(path), `Missing ${path}`);
   assert.ok(!paths.has('dist/skills.js'), 'Stale modules must be removed by the clean build');
+  for (const path of ['skills/juejin-cli/references/editorial-principles.md', 'skills/juejin-cli/templates/article.md', 'skills/drawio-skill/SKILL.md', 'skills/drawio-skill/LICENSE', 'skills/drawio-skill/scripts/validate.py']) assert.ok(paths.has(path), `Missing ${path}`);
   assert.ok(![...paths].some(path => path.includes('session.json') || path.startsWith('output/')));
   const archive = join(directory, packed.filename);
   const prefix = join(directory, 'install');
@@ -26,6 +27,9 @@ try {
   const metadata = JSON.parse(await readFile(join(installed, 'package.json'), 'utf8'));
   assert.equal(run(process.execPath, [cli, '--version'], env).trim(), metadata.version);
   await access(join(skillsRoot, 'juejin-cli', 'SKILL.md'));
+  await access(join(skillsRoot, 'drawio-skill', 'scripts', 'validate.py'));
+  const drawioStatus = JSON.parse(run(process.execPath, [cli, 'skill', 'status', '--name', 'drawio-skill', '--json'], env));
+  assert.equal(drawioStatus.data.state, 'installed');
   const schema = JSON.parse(run(process.execPath, [cli, 'schema', 'article', 'publish', '--json'], env));
   assert.equal(schema.data.command.name, 'publish');
   const result = JSON.parse(run(process.execPath, [cli, 'skill', 'status', '--json'], env));

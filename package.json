@@ -1,6 +1,6 @@
 {
   "name": "@ganzhibin/juejin-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A scriptable Juejin CLI for humans and AI agents",
   "type": "module",
   "license": "MIT",
@@ -27,9 +27,20 @@
     "url": "https://github.com/Ganzhib/juejin-cli.git"
   },
   "homepage": "https://ganzhib.github.io/juejin-cli/",
-  "bugs": { "url": "https://github.com/Ganzhib/juejin-cli/issues" },
-  "keywords": ["juejin", "cli", "agent", "skills", "markdown"],
-  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "bugs": {
+    "url": "https://github.com/Ganzhib/juejin-cli/issues"
+  },
+  "keywords": [
+    "juejin",
+    "cli",
+    "agent",
+    "skills",
+    "markdown"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "tsc -p tsconfig.json --noEmit",

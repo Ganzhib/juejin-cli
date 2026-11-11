@@ -6,6 +6,7 @@ import { CliError } from '../shared/errors.js';
 import { PACKAGE_NAME, PACKAGE_ROOT, VERSION } from '../package.js';
 
 export type SkillAgent = 'shared' | 'claude' | 'cursor';
+export type BundledSkillName = 'juejin-cli' | 'drawio-skill';
 const SKILL_NAME = 'juejin-cli';
 const BUNDLED_SKILL = join(PACKAGE_ROOT, 'skills', 'juejin-cli');
 const RECEIPT = '.juejin-cli-install.json';
@@ -23,14 +24,14 @@ export function skillDirectory(agent: SkillAgent = 'shared'): string {
   return join(homedir(), '.agents', 'skills', SKILL_NAME);
 }
 
-function digest(content: string): string { return createHash('sha256').update(content).digest('hex'); }
+function digest(content: string | Uint8Array): string { return createHash('sha256').update(content).digest('hex'); }
 
-async function bundledFiles(directory = BUNDLED_SKILL, prefix = ''): Promise<Record<string, string>> {
-  const files: Record<string, string> = {};
+async function bundledFiles(directory = BUNDLED_SKILL, prefix = ''): Promise<Record<string, Buffer>> {
+  const files: Record<string, Buffer> = {};
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const relative = join(prefix, entry.name);
     if (entry.isDirectory()) Object.assign(files, await bundledFiles(join(directory, entry.name), relative));
-    else files[relative] = await readFile(join(directory, entry.name), 'utf8');
+    else files[relative] = await readFile(join(directory, entry.name));
   }
   return files;
 }
@@ -54,8 +55,8 @@ async function inspectInstallation(directory: string): Promise<{ status: SkillSt
     // The receipt is local input. Never follow a path out of the owned skill folder.
     const path = resolve(directory, relative);
     if (!path.startsWith(resolve(directory) + sep)) throw new CliError('INPUT', 'Skill 安装记录包含非法路径。');
-    let content: string;
-    try { content = await readFile(path, 'utf8'); }
+    let content: Buffer;
+    try { content = await readFile(path); }
     catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { status: { path: directory, state: 'modified', version: receipt.version }, receipt };
       throw error;
@@ -69,12 +70,13 @@ export async function skillStatus(directory = skillDirectory()): Promise<SkillSt
   return (await inspectInstallation(directory)).status;
 }
 
-export async function installSkill(directory = skillDirectory()): Promise<SkillStatus> {
+export async function installSkill(directory = skillDirectory(), name: BundledSkillName = 'juejin-cli'): Promise<SkillStatus> {
+  if (!['juejin-cli', 'drawio-skill'].includes(name)) throw new CliError('INPUT', '未知内置 Skill。');
   const { status, receipt: previous } = await inspectInstallation(directory);
   if (status.state === 'modified' || status.state === 'unmanaged') {
     throw new CliError('INPUT', `已有自定义 Skill，已保留原文件：${directory}。请选择其他目录或先备份并移走该目录。`);
   }
-  const files = await bundledFiles();
+  const files = await bundledFiles(join(PACKAGE_ROOT, 'skills', name));
   const hashes = Object.fromEntries(Object.entries(files).map(([path, content]) => [path, digest(content)]));
   if (previous?.version === VERSION && JSON.stringify(previous.files) === JSON.stringify(hashes)) return status;
   await mkdir(directory, { recursive: true });
@@ -87,6 +89,9 @@ export async function installSkill(directory = skillDirectory()): Promise<SkillS
       await writeFile(temporary, content);
       await rename(temporary, path);
     } finally { await rm(temporary, { force: true }); }
+  }
+  for (const relative of Object.keys(previous?.files ?? {})) {
+    if (!(relative in files)) await rm(join(directory, relative), { force: true });
   }
   const receipt: SkillReceipt = { package: PACKAGE_NAME, version: VERSION, files: hashes };
   await writeFile(join(directory, RECEIPT), JSON.stringify(receipt, null, 2) + '\n');
@@ -105,14 +110,16 @@ export async function autoInstallSkill(options: { quiet?: boolean } = {}): Promi
     }
   }
   for (const directory of directories) {
+    for (const name of ['juejin-cli', 'drawio-skill'] as const) {
     try {
-      await installSkill(directory);
+      await installSkill(join(dirname(directory), name), name);
     } catch (error) {
       // An unwritable or customized skill directory must not disable the CLI itself.
       if (!options.quiet) {
         const message = error instanceof Error ? error.message : String(error);
         process.stderr.write(`Skill 自动安装未完成：${message} 可运行 juejin skill install 手动处理。\n`);
       }
+    }
     }
   }
 }

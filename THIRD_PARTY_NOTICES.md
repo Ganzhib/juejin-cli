@@ -1,5 +1,15 @@
 # Third-party notices
 
+## Agents365-ai/drawio-skill
+
+`skills/drawio-skill/` bundles Draw.io Architecture Studio 3.4.4 from
+https://github.com/Agents365-ai/drawio-skill/tree/main/skills/drawio-skill
+under the MIT license. Copyright (c) 2026 Agents365-ai.
+The complete upstream license is retained in `skills/drawio-skill/LICENSE`.
+The explicit-only invocation flag was removed to support diagram discovery in
+the bundled writing workflow. Python bytecode caches are excluded; draw.io
+Desktop is an external optional dependency and is not distributed in this package.
+
 ## liuleihang/juejin-skills
 
 The ImageX protocol, AWS SigV4 signing construction, CRC32 upload flow, and

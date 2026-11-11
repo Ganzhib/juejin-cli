@@ -4,6 +4,8 @@
 
 ## 安装
 
+[安装官网](https://ganzhib.github.io/juejin-cli/) · [GitHub 源码](https://github.com/Ganzhib/juejin-cli) · [npm 包](https://www.npmjs.com/package/@ganzhibin/juejin-cli)
+
 需要 Node.js **22.16+**。安装指南、场景与可复制提示词：[GitHub Pages](https://ganzhib.github.io/juejin-cli/)。
 
 从 npm 安装：
@@ -44,6 +46,13 @@ juejin auth logout
 
 ## Agent Skill 自动安装
 
+0.2.0 同时内置 `juejin-cli` 写作技能和 `drawio-skill` 绘图技能，安装到同一个 Agent 技能根目录，内容均来自 npm 包，无需再次下载技能仓库。写作指南采用本地参考文件和可自由组织的空白骨架。draw.io 脚本需要 Python 3，PNG 导出需要另装 draw.io Desktop；CLI 不会自动安装系统软件。
+
+```bash
+juejin skill status --name drawio-skill --json
+juejin skill install --name drawio-skill
+```
+
 Skill 随 CLI 的 npm 包一起下载，内容与当前 CLI 版本对应，不额外从 GitHub 拉取不匹配的最新版。安装脚本会自动安装到 `~/.agents/skills/juejin-cli/`，供 Codex 与 Cursor 发现；检测到 `~/.claude/` 时，也会安装到 Claude Code 的技能目录。使用 npx 或禁用安装脚本时，首次运行 CLI 会自动补装。
 
 ```bash
@@ -59,7 +68,7 @@ Skill 包含草稿、专栏、发布和热点选题示例，源码见 [skills/ju
 
 ## 发布到专栏
 
-开发版支持目录级发布（npm 0.1.0 尚不包含）：先按 [技术写作指南](skills/juejin-cli/references/technical-writing.md) 整理文章，复制 [frontmatter 模板](skills/juejin-cli/templates/typescript-article.md) 并填写实际内容，将待发布 `.md` 文件放在同一目录第一层。
+从 0.2.0 起支持目录级发布：先按本地 [技术写作指南](skills/juejin-cli/references/technical-writing.md) 整理文章，可选用 [空白 frontmatter 骨架](skills/juejin-cli/templates/article.md)，将待发布 `.md` 文件放在同一目录第一层。
 
 ```bash
 juejin article publish-directory ./prepared --column COLUMN_ID --dry-run --json

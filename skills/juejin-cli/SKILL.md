@@ -5,7 +5,9 @@ description: 使用 juejin CLI 查询稀土掘金文章、管理 Markdown 草稿
 
 # 掘金 CLI
 
-需要从原稿整理技术文章、识别适合的文章结构或自动补齐发布配置时，先读 [技术写作与发布指南](references/technical-writing.md)。固定 frontmatter 可复用 [TypeScript 模板](templates/typescript-article.md)，其他主题需查询对应标签，不能直接套用 TypeScript 标签。
+需要整理技术文章或自动补齐发布配置时，先读本地 [技术写作与发布指南](references/technical-writing.md)。可选用 [空白元数据骨架](templates/article.md)，按真实内容填写分类标签，正文结构由素材决定。
+
+架构图和流程图优先使用同目录下内置的 [draw.io 技能](../drawio-skill/SKILL.md)，保留可编辑图源并导出 PNG 后上传。运行 `juejin skill status --name drawio-skill --json` 检查安装。技能本地可读；脚本需要 Python 3，原生图片导出需要 draw.io Desktop。
 
 通过本机 `juejin` 命令操作掘金。先用 `juejin schema --json` 查看命令树，再用 `juejin schema article publish --json` 等查询目标命令的参数、必填项与枚举。调用时使用 `--json`。成功结果在 stdout 的 `data` 中；失败结果在 stderr 的 `error` 中，并返回非零退出码。
 
@@ -51,5 +53,7 @@ juejin column get COLUMN_ID --json
 ## 失败与恢复
 
 网络失败不代表写入失败。遇到超时或 HTTP 错误，先运行 `juejin history --json`，再查询已有草稿或专栏，确认远端状态后决定是否重试。不要自动重放写请求。保留错误中的平台 `err_no`，不要把所有业务错误都解释成登录失效。
+
+图片错误若返回 `upload_status: committed` 和 `uri`，使用 `juejin image resolve URI --json` 只查询已有图片地址，不重新上传。更新公开文章时检查图片是否可由未登录读者访问；项目官网托管的公开图片可直接引用。
 
 额外场景和可复制提示词见随包的 [场景示例](references/scenarios.md)。
