@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+.env
+.DS_Store
+session.json
+storage-state.json
+.juejin-cli/
