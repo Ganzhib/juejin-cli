@@ -39,7 +39,7 @@ test('publish dry run only reads; a failed publish retains target IDs without re
   let publishes = 0;
   try {
     const service = writing(home, async url => {
-      if (String(url).endsWith('/article_draft/detail')) return Response.json({ err_no: 0, data: { article_draft: { id: '123', title: '待发布文章' } } });
+      if (String(url).endsWith('/article_draft/detail')) return Response.json({ err_no: 0, data: { article_draft: { id: '123', title: '待发布文章', mark_content: '这篇文章解释真实的设计取舍。' } } });
       publishes++;
       throw new TypeError('socket closed');
     });

@@ -8,6 +8,7 @@ import { DraftService, type DraftOptions } from './draft-service.js';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { validatePublishContent } from '../content/publish-check.js';
 
 export interface SaveDraftOptions extends DraftOptions { dryRun?: boolean }
 export interface ColumnOptions { title?: string; intro?: string; cover?: string; dryRun?: boolean }
@@ -45,7 +46,11 @@ export class WritingService {
       const pending = files.filter(file => !state.items.some(item => item.file === file && item.phase === 'done'));
       // Validate every remaining article before the first remote write.
       const plans = [];
-      for (const file of pending) plans.push(await this.drafts.prepare(file, options));
+      for (const file of pending) {
+        const plan = await this.drafts.prepare(file, options);
+        validatePublishContent(plan.input.title, plan.input.mark_content);
+        plans.push(plan);
+      }
       if (options.dryRun) return { dry_run: true, column_id: options.column, count: pending.length, articles: plans.map((plan, index) => ({ file: pending[index], title: plan.input.title, category_id: plan.input.category_id, tag_ids: plan.input.tag_ids })) };
       for (const file of pending) {
         let item = state.items.find(item => item.file === file);
@@ -115,10 +120,12 @@ export class WritingService {
     const columnIds = options.columns ?? [];
     if (options.dryRun) {
       const draft = await this.client.draft(options.draft);
+      validatePublishContent(draft.title, draft.mark_content);
       return { draft_id: draft.id, title: draft.title, column_ids: columnIds, dry_run: true };
     }
     return this.session.withWriteLock(async () => {
-      await this.client.draft(options.draft);
+      const draft = await this.client.draft(options.draft);
+      validatePublishContent(draft.title, draft.mark_content);
       return new OperationJournal(this.session.home).run('article.publish', { draft_id: options.draft, column_ids: columnIds }, async () => {
         const published = await this.client.publish(options.draft, columnIds);
         return { article_id: published.article_id, draft_id: options.draft, column_ids: columnIds, status: 'submitted', url: `https://juejin.cn/post/${published.article_id}` };
