@@ -5,12 +5,13 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const directory = await mkdtemp(join(tmpdir(), 'juejin-package-'));
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npm = process.env.npm_execpath;
+if (!npm) throw new Error('Run package checks through npm run check:package or npm run release:check');
 function run(command, args, env = {}) {
   return execFileSync(command, args, { encoding: 'utf8', env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
 }
 try {
-  const [packed] = JSON.parse(run(npm, ['pack', '--json', '--ignore-scripts', '--pack-destination', directory]));
+  const [packed] = JSON.parse(run(process.execPath, [npm, 'pack', '--json', '--ignore-scripts', '--pack-destination', directory]));
   const paths = new Set(packed.files.map(file => file.path));
   for (const path of ['dist/cli.js', 'dist/cli/program.js', 'dist/runtime/skills.js', 'skills/juejin-cli/SKILL.md', 'skills/juejin-cli/references/scenarios.md', 'scripts/postinstall.mjs']) assert.ok(paths.has(path), `Missing ${path}`);
   assert.ok(!paths.has('dist/skills.js'), 'Stale modules must be removed by the clean build');
@@ -19,7 +20,7 @@ try {
   const prefix = join(directory, 'install');
   const skillsRoot = join(directory, 'skills');
   const env = { JUEJIN_AUTO_INSTALL_SKILL: '1', JUEJIN_SKILLS_DIR: skillsRoot };
-  run(npm, ['install', '--prefix', prefix, '--omit=dev', '--no-audit', '--no-fund', archive], env);
+  run(process.execPath, [npm, 'install', '--prefix', prefix, '--omit=dev', '--no-audit', '--no-fund', archive], env);
   const installed = join(prefix, 'node_modules', ...packed.name.split('/'));
   const cli = join(installed, 'dist', 'cli.js');
   const metadata = JSON.parse(await readFile(join(installed, 'package.json'), 'utf8'));

@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
 
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npm = process.env.npm_execpath;
+if (!npm) throw new Error('Run release checks through npm run release:check');
 const options = { stdio: 'inherit', env: { ...process.env, JUEJIN_AUTO_INSTALL_SKILL: '0' } };
-for (const task of ['check', 'test', 'build']) execFileSync(npm, ['run', task], options);
+for (const task of ['check', 'test', 'build']) execFileSync(process.execPath, [npm, 'run', task], options);
 execFileSync(process.execPath, ['scripts/check-package.mjs', 'release'], options);
-execFileSync(npm, ['run', 'build:site'], options);
+execFileSync(process.execPath, [npm, 'run', 'build:site'], options);
 console.log('Release checks passed. Publish the verified .tgz in release/ after npm login.');
