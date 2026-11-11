@@ -69,7 +69,7 @@ async function prepareVersion(version: string, cache: string): Promise<string> {
     await new Promise<void>((resolveInstall, reject) => {
       const child = spawn(process.execPath, [npm, 'install', '--prefix', staging,
         `${PACKAGE_NAME}@${version}`, `--registry=${REGISTRY}`, '--ignore-scripts', '--omit=dev',
-        '--no-audit', '--no-fund', '--package-lock=false', '--fetch-retries=0', '--fetch-timeout=15000'],
+        '--no-audit', '--no-fund', '--package-lock=false', '--prefer-online', '--fetch-retries=0', '--fetch-timeout=15000'],
       { stdio: 'ignore', windowsHide: true, timeout: 60000,
         env: { ...process.env, JUEJIN_AUTO_UPDATE: '0', npm_config_engine_strict: 'true' } });
       child.once('error', reject);
