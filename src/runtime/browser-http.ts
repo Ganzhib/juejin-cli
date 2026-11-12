@@ -3,14 +3,14 @@ import { JuejinHttp } from '../platform/juejin/http.js';
 import { SessionStore } from './session.js';
 
 // Growth endpoints require the official page's security SDK. Use its normal fetch path, without extracting or forging signatures.
-export async function withBrowserHttp<T>(session: SessionStore, action: (http: JuejinHttp) => Promise<T>): Promise<T> {
+export async function withBrowserHttp<T>(session: SessionStore, action: (http: JuejinHttp) => Promise<T>, pageKind: 'signin' | 'lottery' = 'signin'): Promise<T> {
   const cookies = await session.load();
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext();
     await context.addCookies(cookies);
     const page = await context.newPage();
-    await page.goto('https://juejin.cn/user/center/signin', { waitUntil: 'load', timeout: 30_000 });
+    await page.goto('https://juejin.cn/user/center/' + pageKind, { waitUntil: 'load', timeout: 30_000 });
     const browserFetch: typeof globalThis.fetch = async (input, init) => {
       const url = new URL(String(input));
       url.searchParams.set('aid', '2608');

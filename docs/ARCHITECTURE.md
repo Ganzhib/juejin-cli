@@ -106,3 +106,13 @@ HTTP 和服务均不自动重放写请求。网络异常意味着结果可能未
 构建先清理 `dist/`，避免模块移动后把旧代码一起发布。归档检查实际安装 tgz、运行其二进制、验证 Skill 和 schema；验证结果对应发布的同一个文件。`release:check` 额外生成站点并把已验证的归档留在 `release/`。
 
 GitHub Actions 在 Node 22 和 24 验证；Pages 独立部署；npm 发布只由匹配版本的 tag 触发，使用该包绑定的 OIDC trusted publisher。真实账户写入验证状态记录在 [API.md](API.md)，贡献者不能把离线通过描述为线上发布成功。
+
+## 签到与本机调度
+
+`checkin.ts` / `lottery.ts` 注册命令；签到、补签和抽奖写入继续由 WritingService 持有同一个账户锁并记录 OperationJournal。补签日期只在服务输入边界按北京时间验证。所有平台路径和已知协议类型仍集中在 client.ts / types.ts。
+
+`runtime/browser-http.ts` 管理官方页面、后台 Chromium 和关闭时机。它为 JuejinHttp 注入页面 fetch：浏览器正常执行官网安全 SDK，HTTP 层仍负责业务码、空 data 和大整数解析。抽奖加载抽奖页，签到加载签到页；失败不会自动用另一种传输重放。CommandContext.growth 提供带生命周期的依赖装配，并允许测试注入 runner。
+
+`runtime/schedule.ts` 只管理当前用户系统任务。每个任务的身份由会话目录散列与任务名构成；同名启用会更新。launchd / systemd / Windows 任务调用同一个短命 runner，再启动 `checkin run --json`，显式传入会话目录。runner 将结构化结果写入本地日志，保留退出码；没有循环、自动抽奖或立即重试。定时执行与人工执行共享账户锁和今日状态查询。
+
+Linux timer 使用 Persistent；macOS 使用 StartCalendarInterval；Windows 使用当前用户 Interactive principal 和 StartWhenAvailable。时间按系统本地时区解析，业务日界线独立采用 Asia/Shanghai。系统注册失败会返回错误；status 查询实际调度器状态，不仅依赖本地配置文件。

@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#f7f5ef" />
     <meta
       name="description"
-      content="让 AI Agent 通过 juejin CLI 管理掘金文章、Markdown 草稿、图片与专栏。安装指南、真实场景与可复制提示词。"
+      content="让 AI Agent 通过 juejin CLI 管理掘金文章、Markdown 草稿、图片、专栏、签到抽奖与每日定时任务。安装指南、真实场景与可复制提示词。"
     />
     <title>juejin CLI · 让 Agent 接上你的掘金写作</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -29,7 +29,7 @@
       >
       <nav aria-label="主导航">
         <a href="#install">安装</a><a href="#workflow">使用场景</a
-        ><a href="#prompts">提示词</a><a href="#commands">命令</a>
+        ><a href="#checkin">每日签到</a><a href="#prompts">提示词</a><a href="#commands">命令</a>
       </nav>
       <a
         class="github"
@@ -49,7 +49,7 @@
           <h1>把掘金写作，<br />接入你的 <span>Agent。</span></h1>
           <p class="hero-description">
             从本地 Markdown 到掘金专栏。让 Agent
-            帮你查资料、传图片、存草稿，再把准备好的文章发布出去。
+            帮你查资料、传图片、存草稿，再把准备好的文章发布出去。签到也可以按你选择的时间执行。
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#install"
@@ -95,7 +95,7 @@
       </section>
       <div class="capabilities wrap">
         <span>文章搜索</span><span>Markdown 正文</span><span>图片上传</span
-        ><span>草稿更新</span><span>专栏管理</span><span>JSON 输出</span>
+        ><span>草稿更新</span><span>专栏管理</span><span>签到抽奖</span><span>每日定时</span><span>JSON 输出</span>
       </div>
 
       <section id="install" class="section wrap">
@@ -291,10 +291,42 @@ juejin --help</code></pre>
         </div>
       </section>
 
+
+      <section id="checkin" class="section wrap">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">03 / YOUR DAILY ROUTINE</div>
+            <h2>想起来时签到，也可以交给时间。</h2>
+          </div>
+          <p>查状态、签一次，或选择每天执行。<br />时间由你设置，任务随时关闭。</p>
+        </div>
+        <div class="command-grid">
+          <article>
+            <h3>先看今天，再签到</h3>
+            <p>查询今日状态、连续天数、月度记录、矿石与补签卡。已签到时自动跳过。</p>
+            <pre>juejin checkin status --json
+juejin checkin run --json
+juejin checkin balance --json</pre>
+          </article>
+          <article>
+            <h3>用一条命令，开启每日签到</h3>
+            <p>支持 macOS、Windows 和 systemd Linux。采用电脑本地时区，同名任务更新，不重复创建。</p>
+            <pre>juejin checkin schedule enable --at 09:00 --name daily
+juejin checkin schedule status --name daily
+juejin checkin schedule disable --name daily</pre>
+          </article>
+        </div>
+        <div class="details-row">
+          <div><h3>任务只做签到</h3><p>每次启动后检查当天状态，执行一次后退出。补签和抽奖由你单独选择。</p></div>
+          <div><h3>记录留在本机</h3><p>结果和错误写入任务日志；登录过期时重新登录。电脑需联网且用户环境可用。</p></div>
+          <div><h3>抽奖前，先看消耗</h3><p>查看免费次数、奖池、幸运值与中奖记录。单抽和十连抽都需明确允许扣矿石，规则以平台为准。</p></div>
+        </div>
+      </section>
+
       <section id="prompts" class="section wrap">
         <div class="section-heading">
           <div>
-            <div class="eyebrow">03 / COPY. PASTE. CREATE.</div>
+            <div class="eyebrow">04 / COPY. PASTE. CREATE.</div>
             <h2>选个场景，复制给 Agent。</h2>
           </div>
           <p>替换文件和目标信息，<br />也可以直接编辑完整提示词。</p>
@@ -365,6 +397,9 @@ juejin --help</code></pre>
                 ><small>热点查询 → 有来源的选题</small></span
               ><span aria-hidden="true">↗</span>
             </button>
+            <button class="scenario" role="tab" id="scenario-checkin" aria-selected="false" aria-controls="prompt-panel" data-scenario="checkin" tabindex="-1">
+              <span class="scenario-icon">05</span><span><strong>每天帮我签到</strong><small>设置时间，查看任务，随时关闭</small></span><span aria-hidden="true">↗</span>
+            </button>
           </div>
           <div
             class="prompt-panel"
@@ -409,7 +444,7 @@ juejin --help</code></pre>
       <section id="commands" class="section wrap commands-section">
         <div class="section-heading">
           <div>
-            <div class="eyebrow">04 / KEEP IT SCRIPTABLE</div>
+            <div class="eyebrow">05 / KEEP IT SCRIPTABLE</div>
             <h2>也可以，直接在终端里用。</h2>
           </div>
           <a
@@ -448,6 +483,19 @@ juejin auth status --json
 juejin skill status --json
 juejin history --json</pre>
           </article>
+
+          <article><h3>签到与补签</h3><pre>juejin checkin stats --json
+juejin checkin calendar --json
+juejin checkin supplement YYYY-MM-DD --dry-run --json</pre></article>
+          <article><h3>管理每日任务</h3><pre>juejin checkin schedule enable --at 09:00
+juejin checkin schedule status
+juejin checkin schedule disable</pre></article>
+          <article><h3>抽奖前看消耗</h3><pre>juejin lottery status --json
+juejin lottery draw --dry-run --json
+juejin lottery draw --count 1 --allow-spend --json</pre></article>
+          <article><h3>奖品与幸运值</h3><pre>juejin lottery history --json
+juejin lottery lucky --json
+juejin lottery rules --json</pre></article>
         </div>
         <div class="details-row">
           <div>

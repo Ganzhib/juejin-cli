@@ -1,6 +1,6 @@
 # juejin-cli
 
-面向开发者与 AI Agent 的稀土掘金 CLI。用本地 Markdown 管理文章，支持登录、搜索、图片上传、草稿、专栏和发布。TypeScript SDK 与 CLI 共用同一套实现。
+面向开发者与 AI Agent 的稀土掘金 CLI。用本地 Markdown 管理文章，支持登录、搜索、图片上传、草稿、专栏、发布，以及签到、抽奖和每日定时任务。TypeScript SDK 与 CLI 共用同一套实现。
 
 ## 安装
 
@@ -49,6 +49,66 @@ juejin auth status --json
 juejin auth import --file /path/to/storage-state.json
 juejin auth logout
 ```
+
+
+## 签到、抽奖与每日定时任务
+
+先安装浏览器并登录。签到和抽奖的受保护接口通过后台 Chromium 加载掘金官方页面，由页面正常运行安全 SDK；不提取或伪造签名。状态、记录和余额查询使用已有 HTTP 客户端。会话过期或平台要求人工验证时，重新运行 `juejin auth login`。
+
+```bash
+juejin checkin status --json
+juejin checkin run --dry-run --json
+juejin checkin run --json
+juejin checkin stats --json
+juejin checkin calendar --json
+juejin checkin calendar --previous-month --json
+juejin checkin balance --json
+juejin checkin cards --json
+juejin checkin rules --json
+```
+
+`run` 先查询北京时间当天状态，已签到返回 `already_checked_in`，不会重复提交。日历接口提供本月或上月记录；`date` 为 Unix 秒，`status` 的 0/1 表示今日未签/已签，2/3 表示过去未签/已签，4 表示未来。奖励直接使用平台响应，最新数量以 `checkin rules` 为准。
+
+补签需要明确指定北京时间日期，并会消耗补签卡：
+
+```bash
+juejin checkin supplement 2026-11-11 --dry-run --json
+juejin checkin supplement 2026-11-11 --json
+```
+
+日期必须在最近 30 天内且早于今天；平台预览会继续核对该日期和补签卡。固定日期示例请换成需要补签的实际日期。程序不自动购买补签卡。
+
+每日自动签到由系统调度器启动，每次执行一次 `checkin run --json`，不需要常驻 CLI 进程：
+
+```bash
+# 预览；不安装任务
+juejin checkin schedule enable --at 09:00 --name daily --dry-run --json
+# 选择启用；同一会话目录、同名任务会更新，不会重复创建
+juejin checkin schedule enable --at 09:00 --name daily --json
+juejin checkin schedule status --name daily --json
+juejin checkin schedule disable --name daily --json
+```
+
+时间采用**电脑本地时区**，结果中的 `timezone` 可核对；签到日界线仍采用北京时间。macOS 使用当前用户 launchd，Windows 使用当前交互用户任务计划程序，Linux 使用 systemd 用户 timer。电脑需要联网、用户环境可用；Linux 用户管理器未运行时不会触发。系统支持的唤醒/错过时间补执行仍需机器恢复运行。启用定时任务前使用长期保留的全局安装或源码目录，任务使用安装时记录的 Node 与 CLI 路径。
+
+任务只签到，不补签、不抽奖。每个任务的日志位于结果返回的 `log` 路径，`disable` 会保留日志。账号会话过期时日志记录错误，任务不会尝试自动登录或重放失败写入。要立即签到，请运行 `checkin run`。
+
+```bash
+juejin lottery status --json
+juejin lottery lucky --json
+juejin lottery history --page 1 --json
+juejin lottery rules --json
+juejin lottery draw --dry-run --json
+juejin lottery draw --count 1 --allow-spend --json
+juejin lottery draw --count 10 --allow-spend --json
+juejin lottery dip HISTORY_ID --json
+juejin lottery lucky-draw --dry-run --json
+juejin lottery lucky-draw --json
+```
+
+平台单抽优先使用免费机会，免费机会与付费单抽共用同一接口。预览不是锁定价格或免费机会；另一个设备可能先消耗免费次数，因此执行单抽或十连抽都需要显式 `--allow-spend`。成本来自平台配置；幸运抽奖消耗已积累幸运值，沾喜气使用平台规定的次数。中奖历史只展示奖品元数据，不输出收件人、电话或地址。领取实物、填写地址和购买道具仍通过官方网页处理。
+
+所有写入复用账户写锁和操作回执。超时后先查 `history` 和今日状态/中奖记录，再决定是否重试；定时任务不会在一次失败后立即重试。网页接口及活动规则可能变化，工具不绕过平台验证。
 
 ## Agent Skill 自动安装
 

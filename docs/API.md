@@ -50,3 +50,32 @@ ImageX 使用临时凭据与 AWS SigV4；上传主机只接收临时上传授权
 - 公开读取由 smoke 脚本验证。
 - 尚未以真实账号执行登录、传图、草稿写入、专栏新建/修改或文章发布。没有生成或发布任何测试文章。
 - MCP、评论/沸点写入、专栏删除与文章排序不在当前版本范围。
+
+## 签到与抽奖（2026-11-12）
+
+协议核对来源为官方签到页和抽奖页实际加载的 `dd598f2.js`、`0525240.js` 与 `795bd59.js`。规则直接由 `get_rules_text` / `lottery_config/rules_text` 获取，奖励不写死在命令中。
+
+| 方法 | 路径 | 用途及参数 |
+| --- | --- | --- |
+| GET | `/growth_api/v1/get_today_status` | 已登录今日状态，data 为 boolean |
+| GET | `/growth_api/v1/get_counts` | `cont_count` / `sum_count` |
+| GET | `/growth_api/v1/get_by_month` | 本月日历 |
+| GET | `/growth_api/v1/get_by_near` | 上月日历，不能当成任意月份查询 |
+| GET | `/growth_api/v1/get_cur_point` | 矿石余额，data 为 number |
+| GET | `/growth_api/v1/get_cur_supp` | 补签卡数量，data 为 number |
+| POST | `/growth_api/v1/check_in` | `{}`，返回 `incr_point` / `sum_point` |
+| POST | `/growth_api/v1/get_by_supp` | 补签预览，`date` 为北京时间目标日的 Unix 秒 |
+| POST | `/growth_api/v1/check_in_supp` | 补签，`{date}` |
+| GET | `/growth_api/v1/lottery_config/get` | `lottery` / `free_count` / `point_cost` |
+| POST | `/growth_api/v1/lottery/draw` | 单抽，`{}`；免费与付费共用 |
+| POST | `/growth_api/v1/lottery/ten_draw` | 十连抽，`{}` |
+| POST | `/growth_api/v1/lottery_history/obj_by_page` | `page_no`、`got_channel:"1"`，data 内 `lottery_histories` / `count` |
+| POST | `/growth_api/v1/lottery_lucky/my_lucky` | 查询幸运值 |
+| POST | `/growth_api/v1/lottery_lucky/dip_lucky` | `lottery_history_id` |
+| POST | `/growth_api/v1/lottery_lucky/lucky_draw` | 幸运值抽奖 |
+
+`v2/get_today_status` 在未登录时也可能返回成功和 `check_in_done:false`。CLI 使用要求登录的 v1 查询，不把 v2 成功响应当作已认证。
+
+已登录真实只读验证覆盖今日状态、连续/累计天数、本月与上月日历、矿石余额、补签卡、幸运值、中奖记录。抽奖配置的直连请求实际返回 HTTP 200 空响应；使用官方抽奖页面的正常安全 SDK 环境可以读取。运行时按领域加载对应官方页面，再通过页面 fetch 请求，原始响应文本交回同一个 JuejinHttp 解析；不复制安全令牌或实现签名算法，不在失败后切换传输重发写入。
+
+中奖历史接口原始响应包含收件信息，SDK 显式投影奖品字段。离线夹具仅使用虚构账号和奖品数据。真实签到、补签或抽奖的执行结果应单独记录，不能从只读和离线通过推断。

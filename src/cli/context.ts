@@ -18,7 +18,7 @@ export interface CommandServices {
 }
 export type ServiceFactory = (session: SessionStore, authenticated: boolean) => Promise<CommandServices>;
 
-export type GrowthServiceRunner = <T>(session: SessionStore, action: (services: CommandServices) => Promise<T>) => Promise<T>;
+export type GrowthServiceRunner = <T>(session: SessionStore, action: (services: CommandServices) => Promise<T>, page?: 'signin' | 'lottery') => Promise<T>;
 
 function servicesFromHttp(session: SessionStore, http: JuejinHttp): CommandServices {
   const client = new JuejinClient(http);
@@ -27,8 +27,8 @@ function servicesFromHttp(session: SessionStore, http: JuejinHttp): CommandServi
   return { session, client, uploader, writing: new WritingService(client, uploader, session, drafts) };
 }
 
-export const runGrowthServices: GrowthServiceRunner = (session, action) =>
-  withBrowserHttp(session, http => action(servicesFromHttp(session, http)));
+export const runGrowthServices: GrowthServiceRunner = (session, action, page) =>
+  withBrowserHttp(session, http => action(servicesFromHttp(session, http)), page);
 
 export async function createServices(session: SessionStore, authenticated: boolean): Promise<CommandServices> {
   const cookies = authenticated ? await session.load() : [];
@@ -47,6 +47,6 @@ export class CommandContext {
   globals(): Globals { return this.program.opts<Globals>(); }
   session(): SessionStore { return new SessionStore(resolve(this.globals().home)); }
   services(authenticated = false): Promise<CommandServices> { return this.serviceFactory(this.session(), authenticated); }
-  growth<T>(action: (services: CommandServices) => Promise<T>): Promise<T> { return this.growthRunner(this.session(), action); }
+  growth<T>(action: (services: CommandServices) => Promise<T>, page: 'signin' | 'lottery' = 'signin'): Promise<T> { return this.growthRunner(this.session(), action, page); }
   emit(value: unknown): void { this.output.success(value, this.globals().json === true); }
 }

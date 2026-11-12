@@ -4,7 +4,7 @@ const installCommands = {
   source:
     "git clone https://github.com/Ganzhib/juejin-cli.git\ncd juejin-cli\nnpm ci\nnpm link",
 };
-const aiSetupPrompt = `请直接帮我安装并配置 juejin-cli，让我之后可以用自然语言管理掘金草稿和专栏。
+const aiSetupPrompt = `请直接帮我安装并配置 juejin-cli，让我之后可以用自然语言管理掘金草稿、专栏和签到任务。
 项目官网：https://ganzhib.github.io/juejin-cli/
 开源仓库：https://github.com/Ganzhib/juejin-cli
 先检查我的操作系统、Node.js 和 npm；需要 Node.js 22.16+，优先使用兼容的 LTS 版本。然后执行 npm install -g {{PACKAGE_NAME}}@latest，遇到权限或路径问题请诊断原因，不要反复重试。
@@ -26,6 +26,7 @@ function updatePrompt() {
   const file = articlePath.value.trim() || "./article.md";
   const column = columnName.value.trim() || "AI 工程实践";
   const prompts = {
+    checkin: "使用 juejin-cli，每天电脑本地时间上午 9 点为我签到，任务名 daily。先核对登录账号，查询已有同名任务，启用或更新时间，再核对系统状态。告诉我本地时区、日志路径，以及查看和关闭任务的命令。只执行签到；不要补签、抽奖或消耗矿石。登录过期时保留错误，不自动重试。",
     draft: `使用 juejin-cli，将 ${file} 保存为掘金草稿。先核对登录账号，检查文章元数据、分类标签、本地图片和封面。缺少必要信息时告诉我具体缺什么。创建成功后返回 draft_id 和预览链接，暂不发布。`,
     publish: `使用 juejin-cli，将 ${file} 发布到我的“${column}”掘金专栏。先核对登录账号并查询专栏，按名称精确确认目标 ID；名称不明确时先让我选择。复用已有草稿 ID（如有），检查摘要、标签、图片与封面。目标确认后执行发布，返回文章 ID、链接和提交状态。不要把接口接受提交当成已经审核通过。`,
     column: `使用 juejin-cli，新建一个名为“${column}”的掘金专栏。先核对账号，根据这个主题帮我拟一段 150 字以内的简介，和我确认简介与封面后再创建。返回专栏 ID、链接和提交状态，供后续发布文章使用。`,
@@ -33,6 +34,7 @@ function updatePrompt() {
       "使用 juejin-cli，查询掘金前端热榜和最近的 TypeScript 文章，整理 5 个适合技术博客的选题。每个选题给出对应来源链接、写作角度和适合的读者。只做查询和选题，不创建草稿或发布。",
   };
   const hints = {
+    checkin: "创建电脑上的每日签到任务；时间可在提示词里修改，只签到。",
     draft: "这个场景只保存草稿。",
     publish: "发布到已确认的目标专栏，可能仍需审核。",
     column: "先确认简介与封面，再创建专栏。",

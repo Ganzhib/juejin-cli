@@ -43,3 +43,22 @@ console.log(result.items);
 ```
 
 所有 ID 使用字符串。HTTP 层保留响应中的大整数 ID，避免 JavaScript 的数字精度损失。
+
+## 签到与系统任务
+
+先用 `schema checkin --json` 和 `schema lottery --json` 发现当前命令。用户只问状态时运行 `checkin status`；明确要求签到时运行 `checkin run`。用户要求每日定时签到时，确认需要的本地时间与任务名后调用 `checkin schedule enable --at HH:mm --name NAME`；已有明确时间时直接执行。用 `schedule status` 核对启用结果，`disable` 移除任务。安装在电脑上，不是云端任务；会话过期需要人工重新登录。
+
+补签要有具体日期，抽奖要有明确的执行授权；单抽与十连抽都需要 `--allow-spend`，不要把用户要求签到扩展成抽奖或消耗补签卡。定时任务只签到。
+
+SDK 需要受保护网页接口时，使用带关闭生命周期的传输：
+
+```typescript
+import { JuejinClient, SessionStore, withBrowserHttp } from '@ganzhibin/juejin-cli';
+
+await withBrowserHttp(new SessionStore(), async http => {
+  const config = await new JuejinClient(http).lotteryConfig();
+  console.log(config.free_count);
+}, 'lottery');
+```
+
+需要与 CLI 相同的锁和回执时，在 callback 中组合 WritingService。普通余额、状态和记录查询可继续使用 Cookie HTTP 客户端。CLI history 仅包含本工具操作回执；lottery history 才是平台中奖记录。

@@ -1,6 +1,6 @@
 ---
 name: juejin-cli
-description: 使用 juejin CLI 查询稀土掘金文章、管理 Markdown 草稿和图片、创建或修改专栏，并将已有草稿发布到指定专栏。用户提到掘金、juejin、掘金专栏写作或发布时使用。
+description: 使用 juejin CLI 查询稀土掘金文章、管理 Markdown 草稿和图片、创建或修改专栏，将已有草稿发布到指定专栏，以及管理签到、抽奖和每日签到定时任务。用户提到掘金、juejin、掘金专栏写作或发布时使用。
 ---
 
 # 掘金 CLI
@@ -24,6 +24,34 @@ juejin column articles COLUMN_ID --json
 ```
 
 公开读取无需登录；自己的草稿、文章和创作者专栏列表需要会话。需要写入时运行 `juejin auth status --json` 核对账号。未登录则运行 `juejin auth login`，由用户在浏览器完成登录。不要读取、展示或复制 Cookie。
+
+## 签到、抽奖与定时任务
+
+```bash
+juejin checkin status --json
+juejin checkin run --json
+juejin checkin stats --json
+juejin checkin calendar --previous-month --json
+juejin checkin balance --json
+juejin checkin cards --json
+juejin checkin supplement YYYY-MM-DD --dry-run --json
+juejin checkin schedule enable --at 09:00 --name daily --json
+juejin checkin schedule status --name daily --json
+juejin checkin schedule disable --name daily --json
+juejin lottery status --json
+juejin lottery draw --dry-run --json
+juejin lottery draw --count 1 --allow-spend --json
+juejin lottery history --page 1 --json
+juejin lottery lucky --json
+juejin lottery dip HISTORY_ID --json
+juejin lottery lucky-draw --dry-run --json
+```
+
+需要先完成 `auth setup` 与登录。受保护请求在后台官网页面执行，平台要求人工验证时重新登录，不绕过验证。问“签到了吗”只查询；要求签到才执行 `run`，返回 `already_checked_in` 表示跳过。
+
+定时任务是可选的。用户明确要求创建每日任务后，使用给定的电脑本地时间和任务名；缺少时间时再询问。同一会话目录下同名任务更新而不重复创建。安装后核对系统 status，告知本地时区、执行日志路径和电脑联网/用户环境要求；关闭时调用 disable。任务只运行签到，不抽奖、不补签。
+
+补签需要具体日期，只接受北京时间最近 30 天且不含今天。单抽可能在免费次数被另一端消费后扣矿石，所以实际抽奖需显式 `--allow-spend`；不要自动补上该选项。十连抽、沾喜气、幸运抽奖分别按用户授权执行。规则与费用以平台当前返回为准，`checkin rules` 和 `lottery rules` 可查询。失败先查本地 history、今日状态或平台中奖历史，不自动重放。
 
 ## 从 Markdown 到专栏文章
 
