@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, access, copyFile, mkdir } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, access, copyFile, mkdir, realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -36,7 +36,7 @@ try {
   assert.deepEqual(scheduleSchema.data.command.commands.map(command => command.name), ['enable', 'status', 'disable']);
   const schedulePreview = JSON.parse(run(process.execPath, [cli, '--home', join(directory, 'profile'), 'checkin', 'schedule', 'enable', '--dry-run', '--json'], env));
   assert.equal(schedulePreview.data.dry_run, true);
-  assert.equal(schedulePreview.data.entry, cli);
+  assert.equal(schedulePreview.data.entry, await realpath(cli));
   const result = JSON.parse(run(process.execPath, [cli, 'skill', 'status', '--json'], env));
   assert.equal(result.data.state, 'installed');
   assert.equal(result.data.version, metadata.version);
