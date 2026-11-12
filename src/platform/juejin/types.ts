@@ -17,3 +17,18 @@ export interface ColumnDetail {
 }
 export interface Page<T> { items: T[]; cursor?: string; has_more?: boolean; count?: number }
 export interface HotItem { content: { content_id: string; title: string; brief: string }; content_counter: { view: number; like: number; comment_count: number }; author: { name: string } }
+
+export interface CheckInCounts { cont_count: number; sum_count: number }
+export interface CheckInReward { incr_point: number; sum_point: number }
+export interface CheckInDay { date: number; status: 0 | 1 | 2 | 3 | 4; point: number }
+export interface GrowthRule { text_bold: string; text_plain: string }
+export interface LotteryPrize {
+  lottery_id: string; lottery_name: string; lottery_type: number; lottery_image: string;
+}
+export interface LotteryConfig { lottery: (LotteryPrize & { unlock_count: number })[]; free_count: number; point_cost: number }
+export interface LotteryLucky { total_value: number; history_value: number; history_count: number }
+export interface LotteryHistory extends LotteryPrize {
+  history_id: string; ctime: number; lottery_count: number; receive_status: number;
+}
+// Supplement and draw responses contain activity-specific fields; preserve them without inventing a fixed reward schema.
+export type GrowthWriteResult = Record<string, unknown>;

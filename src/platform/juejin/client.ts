@@ -1,6 +1,6 @@
 import { CliError } from '../../shared/errors.js';
 import { JuejinHttp } from './http.js';
-import type { Article, Category, ColumnDetail, ColumnInput, Draft, DraftInput, HotItem, Page, Tag } from './types.js';
+import type { Article, Category, ColumnDetail, ColumnInput, Draft, DraftInput, HotItem, Page, Tag, CheckInCounts, CheckInDay, CheckInReward, GrowthRule, GrowthWriteResult, LotteryConfig, LotteryHistory, LotteryLucky } from './types.js';
 
 export class JuejinClient {
   constructor(readonly http: JuejinHttp) {}
@@ -126,5 +126,41 @@ export class JuejinClient {
 
   async updateColumn(id: string, input: ColumnInput): Promise<void> {
     await this.http.request('/content_api/v1/column/publish', { ...input, column_id: id });
+  }
+
+  checkInStatus(): Promise<boolean> { return this.http.data('/growth_api/v1/get_today_status'); }
+  checkInCounts(): Promise<CheckInCounts> { return this.http.data('/growth_api/v1/get_counts'); }
+  checkInCalendar(previousMonth = false): Promise<CheckInDay[]> {
+    return this.http.data(previousMonth ? '/growth_api/v1/get_by_near' : '/growth_api/v1/get_by_month');
+  }
+  points(): Promise<number> { return this.http.data('/growth_api/v1/get_cur_point'); }
+  supplementCards(): Promise<number> { return this.http.data('/growth_api/v1/get_cur_supp'); }
+  checkInRules(): Promise<GrowthRule[]> { return this.http.data('/growth_api/v1/get_rules_text'); }
+  checkIn(): Promise<CheckInReward> { return this.http.data('/growth_api/v1/check_in', {}); }
+  supplementPreview(date: number): Promise<GrowthWriteResult> { return this.http.data('/growth_api/v1/get_by_supp', { date }); }
+  supplementCheckIn(date: number): Promise<GrowthWriteResult> { return this.http.data('/growth_api/v1/check_in_supp', { date }); }
+  lotteryConfig(): Promise<LotteryConfig> { return this.http.data('/growth_api/v1/lottery_config/get'); }
+  lotteryRules(): Promise<GrowthRule[]> { return this.http.data('/growth_api/v1/lottery_config/rules_text'); }
+  async lotteryLucky(): Promise<LotteryLucky> {
+    const result = await this.http.data<LotteryLucky>('/growth_api/v1/lottery_lucky/my_lucky', {});
+    return { total_value: result.total_value, history_value: result.history_value, history_count: result.history_count };
+  }
+  lotteryDraw(count: 1 | 10): Promise<GrowthWriteResult> {
+    return this.http.data(count === 1 ? '/growth_api/v1/lottery/draw' : '/growth_api/v1/lottery/ten_draw', {});
+  }
+  lotteryDip(historyId: string): Promise<GrowthWriteResult> {
+    return this.http.data('/growth_api/v1/lottery_lucky/dip_lucky', { lottery_history_id: historyId });
+  }
+  lotteryLuckyDraw(): Promise<GrowthWriteResult> { return this.http.data('/growth_api/v1/lottery_lucky/lucky_draw', {}); }
+  async lotteryHistory(page = 1): Promise<Page<LotteryHistory>> {
+    const result = await this.http.data<{ lottery_histories: LotteryHistory[] | null; count: number }>(
+      '/growth_api/v1/lottery_history/obj_by_page', { page_no: page, got_channel: '1' });
+    // The endpoint also returns delivery contacts. CLI history exposes prize metadata only.
+    const items = (result.lottery_histories ?? []).map(entry => ({
+      history_id: entry.history_id, ctime: entry.ctime, lottery_id: entry.lottery_id,
+      lottery_name: entry.lottery_name, lottery_type: entry.lottery_type, lottery_image: entry.lottery_image,
+      lottery_count: entry.lottery_count, receive_status: entry.receive_status,
+    }));
+    return { items, count: result.count };
   }
 }

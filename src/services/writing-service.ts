@@ -8,6 +8,7 @@ import { DraftService, type DraftOptions } from './draft-service.js';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { checkInDate, supplementTimestamp } from './checkin-date.js';
 import { validatePublishContent } from '../content/publish-check.js';
 
 export interface SaveDraftOptions extends DraftOptions { dryRun?: boolean }
@@ -131,5 +132,63 @@ export class WritingService {
         return { article_id: published.article_id, draft_id: options.draft, column_ids: columnIds, status: 'submitted', url: `https://juejin.cn/post/${published.article_id}` };
       });
     });
+  }
+
+  async checkIn(options: { dryRun?: boolean } = {}) {
+    if (options.dryRun) {
+      const done = await this.client.checkInStatus();
+      return { date: checkInDate(), check_in_done: done, will_write: !done, dry_run: true };
+    }
+    return this.session.withWriteLock(async () => {
+      const date = checkInDate();
+      if (await this.client.checkInStatus()) return { date, status: 'already_checked_in' };
+      return new OperationJournal(this.session.home).run('checkin.run', { date }, async () => ({
+        date, status: 'checked_in', ...await this.client.checkIn(),
+      }));
+    });
+  }
+
+  async supplementCheckIn(date: string, options: { dryRun?: boolean } = {}) {
+    const timestamp = supplementTimestamp(date);
+    if (options.dryRun) return { date, timestamp, preview: await this.client.supplementPreview(timestamp), dry_run: true };
+    return this.session.withWriteLock(async () => {
+      await this.client.supplementPreview(timestamp);
+      return new OperationJournal(this.session.home).run('checkin.supplement', { date, timestamp }, async () => ({
+        date, status: 'supplemented', result: await this.client.supplementCheckIn(timestamp),
+      }));
+    });
+  }
+
+  async drawLottery(options: { count: 1 | 10; allowSpend?: boolean; dryRun?: boolean }) {
+    // Free and paid single draws share one endpoint. Another client may consume the free chance after a preview.
+    if (!options.dryRun && !options.allowSpend) {
+      throw new CliError('INPUT', '抽奖接口可能扣除矿石，请先 --dry-run 查看，再明确传入 --allow-spend。');
+    }
+    const preview = async () => {
+      const config = await this.client.lotteryConfig();
+      const balance = await this.client.points();
+      const estimated = options.count === 1 && config.free_count > 0 ? 0 : config.point_cost * options.count;
+      return { draw_count: options.count, free_count: config.free_count, point_cost: config.point_cost, estimated_point_cost: estimated, balance };
+    };
+    if (options.dryRun) return { ...await preview(), dry_run: true };
+    return this.session.withWriteLock(async () => {
+      const plan = await preview();
+      return new OperationJournal(this.session.home).run('lottery.draw', { draw_count: options.count }, async () => ({
+        ...plan, status: 'drawn', result: await this.client.lotteryDraw(options.count),
+      }));
+    });
+  }
+
+  async dipLottery(historyId: string) {
+    return this.session.withWriteLock(() => new OperationJournal(this.session.home).run(
+      'lottery.dip', { lottery_history_id: historyId }, async () => ({
+        status: 'dipped', lottery_history_id: historyId, result: await this.client.lotteryDip(historyId),
+      })));
+  }
+
+  async drawLuckyLottery(options: { dryRun?: boolean } = {}) {
+    if (options.dryRun) return { lucky: await this.client.lotteryLucky(), dry_run: true };
+    return this.session.withWriteLock(() => new OperationJournal(this.session.home).run(
+      'lottery.lucky_draw', {}, async () => ({ status: 'drawn', result: await this.client.lotteryLuckyDraw() })));
   }
 }

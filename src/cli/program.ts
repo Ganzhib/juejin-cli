@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { VERSION } from '../package.js';
 import { defaultHome } from '../runtime/session.js';
 import { autoInstallSkill } from '../runtime/skills.js';
-import { CommandContext, type ServiceFactory } from './context.js';
+import { CommandContext, type ServiceFactory, type GrowthServiceRunner } from './context.js';
 import { CliOutput, type CliStreams } from './output.js';
 import { registerAuth } from './commands/auth.js';
 import { registerDiscovery } from './commands/discovery.js';
@@ -12,18 +12,21 @@ import { registerColumn } from './commands/column.js';
 import { registerImage } from './commands/image.js';
 import { registerHistory } from './commands/history.js';
 import { registerSkill } from './commands/skill.js';
+import { registerCheckIn } from './commands/checkin.js';
+import { registerLottery } from './commands/lottery.js';
 import { registerSchema } from './commands/schema.js';
 
 export interface ProgramOptions {
   streams?: CliStreams;
   services?: ServiceFactory;
+  growth?: GrowthServiceRunner;
   jsonDiagnostics?: boolean;
 }
 
 export function createProgram(options: ProgramOptions = {}): Command {
   const output = new CliOutput(options.streams ?? process);
   const program = new Command();
-  program.name('juejin').description('稀土掘金 CLI：文章、草稿、图片与专栏').version(VERSION)
+  program.name('juejin').description('稀土掘金 CLI：文章、草稿、专栏、签到与抽奖').version(VERSION)
     .option('--json', '输出单行 JSON，错误也使用 JSON')
     .option('--home <directory>', '会话与操作记录目录', defaultHome())
     .showHelpAfterError().exitOverride();
@@ -31,7 +34,7 @@ export function createProgram(options: ProgramOptions = {}): Command {
     writeOut: text => { output.streams.stdout.write(text); },
     writeErr: text => { if (!options.jsonDiagnostics) output.streams.stderr.write(text); },
   });
-  const context = new CommandContext(program, output, options.services);
+  const context = new CommandContext(program, output, options.services, options.growth);
   registerAuth(context);
   registerDiscovery(context);
   registerArticle(context);
@@ -39,6 +42,8 @@ export function createProgram(options: ProgramOptions = {}): Command {
   registerColumn(context);
   registerImage(context);
   registerHistory(context);
+  registerCheckIn(context);
+  registerLottery(context);
   registerSkill(context);
   registerSchema(context);
   return program;

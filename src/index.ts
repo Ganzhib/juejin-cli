@@ -9,3 +9,6 @@ export { DraftService } from './services/draft-service.js';
 export { installSkill, skillStatus } from './runtime/skills.js';
 export { WritingService } from './services/writing-service.js';
 export { createProgram, runCli } from './cli/program.js';
+
+export type { CheckInCounts, CheckInReward, CheckInDay, GrowthRule, GrowthWriteResult, LotteryPrize, LotteryConfig, LotteryHistory, LotteryLucky } from './platform/juejin/types.js';
+export { withBrowserHttp } from './runtime/browser-http.js';
