@@ -159,7 +159,7 @@ export class CheckInScheduler {
         if (previous.registered) await this.checked('systemctl', ['--user', 'restart', plan.label + '.timer']);
       } else {
         await this.checked('powershell.exe', powerShell({name:plan.label,at:plan.at,node:plan.node,args:windowsArgument(plan.runner)},
-          "$action=New-ScheduledTaskAction -Execute $spec.node -Argument $spec.args; $trigger=New-ScheduledTaskTrigger -Daily -At $spec.at; $settings=New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew; Register-ScheduledTask -TaskName $spec.name -Action $action -Trigger $trigger -Settings $settings -Force | Out-Null"));
+          "$action=New-ScheduledTaskAction -Execute $spec.node -Argument $spec.args; $trigger=New-ScheduledTaskTrigger -Daily -At $spec.at; $settings=New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew; $principal=New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().User.Value) -LogonType Interactive -RunLevel Limited; Register-ScheduledTask -TaskName $spec.name -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null"));
       }
       await writeFile(this.metadata(plan.name), JSON.stringify(plan, null, 2) + '\n', { mode: 0o600 });
       return { enabled: true, ...plan };
