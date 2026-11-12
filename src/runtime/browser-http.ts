@@ -10,6 +10,7 @@ export async function withBrowserHttp<T>(session: SessionStore, action: (http: J
     const context = await browser.newContext();
     await context.addCookies(cookies);
     const page = await context.newPage();
+    // Each activity initializes its own protected request context; use the matching official page.
     await page.goto('https://juejin.cn/user/center/' + pageKind, { waitUntil: 'load', timeout: 30_000 });
     const browserFetch: typeof globalThis.fetch = async (input, init) => {
       const url = new URL(String(input));

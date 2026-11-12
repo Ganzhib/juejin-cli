@@ -13,7 +13,7 @@ function run(command, args, env = {}) {
 try {
   const [packed] = JSON.parse(run(process.execPath, [npm, 'pack', '--json', '--ignore-scripts', '--pack-destination', directory]));
   const paths = new Set(packed.files.map(file => file.path));
-  for (const path of ['dist/cli.js', 'dist/cli/program.js', 'dist/runtime/skills.js', 'skills/juejin-cli/SKILL.md', 'skills/juejin-cli/references/scenarios.md', 'scripts/postinstall.mjs']) assert.ok(paths.has(path), `Missing ${path}`);
+  for (const path of ['dist/cli.js', 'dist/cli/program.js', 'dist/runtime/skills.js', 'dist/runtime/browser-http.js', 'dist/runtime/schedule.js', 'dist/cli/commands/checkin.js', 'skills/juejin-cli/SKILL.md', 'skills/juejin-cli/references/scenarios.md', 'scripts/postinstall.mjs']) assert.ok(paths.has(path), `Missing ${path}`);
   assert.ok(!paths.has('dist/skills.js'), 'Stale modules must be removed by the clean build');
   for (const path of ['skills/juejin-cli/references/editorial-principles.md', 'skills/juejin-cli/templates/article.md', 'skills/drawio-skill/SKILL.md', 'skills/drawio-skill/LICENSE', 'skills/drawio-skill/scripts/validate.py']) assert.ok(paths.has(path), `Missing ${path}`);
   assert.ok(![...paths].some(path => path.includes('session.json') || path.startsWith('output/')));
@@ -32,6 +32,11 @@ try {
   assert.equal(drawioStatus.data.state, 'installed');
   const schema = JSON.parse(run(process.execPath, [cli, 'schema', 'article', 'publish', '--json'], env));
   assert.equal(schema.data.command.name, 'publish');
+  const scheduleSchema = JSON.parse(run(process.execPath, [cli, 'schema', 'checkin', 'schedule', '--json'], env));
+  assert.deepEqual(scheduleSchema.data.command.commands.map(command => command.name), ['enable', 'status', 'disable']);
+  const schedulePreview = JSON.parse(run(process.execPath, [cli, '--home', join(directory, 'profile'), 'checkin', 'schedule', 'enable', '--dry-run', '--json'], env));
+  assert.equal(schedulePreview.data.dry_run, true);
+  assert.equal(schedulePreview.data.entry, cli);
   const result = JSON.parse(run(process.execPath, [cli, 'skill', 'status', '--json'], env));
   assert.equal(result.data.state, 'installed');
   assert.equal(result.data.version, metadata.version);
