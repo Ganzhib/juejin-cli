@@ -1,4 +1,5 @@
 import type { CommandContext } from '../context.js';
+import { CheckInScheduler } from '../../runtime/schedule.js';
 import { checkInDate } from '../../services/checkin-date.js';
 
 export function registerCheckIn(context: CommandContext): void {
@@ -18,5 +19,18 @@ export function registerCheckIn(context: CommandContext): void {
   checkin.command('supplement <date>').description('使用补签卡补签 YYYY-MM-DD，北京时间最近 30 天、不含今天')
     .option('--dry-run', '只查询平台补签预览，不消耗补签卡')
     .action(async (date: string, options: { dryRun?: boolean }) => context.emit(await context.growth(services => services.writing.supplementCheckIn(date, options))));
+  const schedule = checkin.command('schedule').description('选择启用、查看或关闭系统每日签到任务，时间使用电脑本地时区');
+  schedule.command('enable').description('安装并启用每日签到；同名任务更新时间，不重复创建')
+    .option('--at <HH:mm>', '每天执行时间（电脑本地时区）', '09:00')
+    .option('--name <name>', '任务名称', 'daily')
+    .option('--dry-run', '预览系统任务定义，不安装或签到')
+    .action(async (options: { at: string; name: string; dryRun?: boolean }) =>
+      context.emit(await new CheckInScheduler(context.session()).enable(options.at, options)));
+  schedule.command('status').description('查询系统调度器中的实际启用状态')
+    .option('--name <name>', '任务名称', 'daily')
+    .action(async (options: { name: string }) => context.emit(await new CheckInScheduler(context.session()).status(options.name)));
+  schedule.command('disable').description('停止并移除任务，保留执行日志')
+    .option('--name <name>', '任务名称', 'daily')
+    .action(async (options: { name: string }) => context.emit(await new CheckInScheduler(context.session()).disable(options.name)));
   checkin.command('rules').description('读取平台当前签到规则').action(async () => context.emit(await (await context.services()).client.checkInRules()));
 }

@@ -12,3 +12,5 @@ export { createProgram, runCli } from './cli/program.js';
 
 export type { CheckInCounts, CheckInReward, CheckInDay, GrowthRule, GrowthWriteResult, LotteryPrize, LotteryConfig, LotteryHistory, LotteryLucky } from './platform/juejin/types.js';
 export { withBrowserHttp } from './runtime/browser-http.js';
+export { CheckInScheduler } from './runtime/schedule.js';
+export type { SchedulePlan, SchedulerOptions, SchedulerExec, SchedulerResult } from './runtime/schedule.js';
