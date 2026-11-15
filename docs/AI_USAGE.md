@@ -4,7 +4,9 @@
 
 CLI 直接读取本地 Markdown，AI 无需把完整正文复制到命令参数。
 
-先调用 `juejin schema --json` 查看命令树；目标命令可用 `juejin schema article publish --json` 按需查询。元数据与命令实现来自同一份 Commander 注册定义，包含参数、必填选项、默认值和枚举。
+统一入口为 `juejin-cli` Skill，写作参考与绘图工具按需读取，无需加载第二个 Skill。未安装时调用 `juejin skill show --json`，从 `data.content` 获取入口，以 `data.directory` 解析本地相对链接。
+
+目标命令未知时，先调用 `juejin schema --depth 1 --json` 查看顶层命令；已知目标时直接用 `juejin schema article publish --json` 查询。`--depth 0` 仅返回当前节点；省略深度保留完整树。节点的 `path` 是不含 `juejin` 的参数数组，`has_subcommands` 表示可继续展开。元数据与命令实现来自同一份 Commander 注册定义，包含参数、选项的 `name`、必填项、默认值和枚举；顶层提供 `schema_version` 与 `cli_version`。
 
 1. 用 `juejin auth status --json` 核对当前用户；未登录时由用户完成 `auth login` 浏览器操作。
 2. 用 `category list`、`tag search` 确认分类和标签。专栏写作先用 `column list --json` 选定专栏 ID，或显式创建专栏。

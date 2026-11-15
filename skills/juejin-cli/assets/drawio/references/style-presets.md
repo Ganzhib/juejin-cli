@@ -1,17 +1,17 @@
 # Style Presets — Learn, Apply, Manage
 
-A **style preset** is a named JSON file capturing a user's visual preferences — palette, shape vocabulary, fonts, edge style. When a preset is active, it fully replaces the built-in conventions in SKILL.md's color/shape/edge tables.
+A **style preset** is a named JSON file capturing a user's visual preferences — palette, shape vocabulary, fonts, edge style. When a preset is active, it replaces the visual defaults in `xml-authoring.md` while preserving the structural conventions in `diagram-types.md`.
 
 Read this file when:
 - The user asks to "learn", "save", "remember", or "extract" a style from a file
 - The user wants to manage existing presets (list, set default, delete, rename)
-- You've resolved an active preset in Step 0 and need the application rules
+- You've resolved an active preset in `../GUIDE.md`'s Creation workflow and need the application rules
 - You need to validate a preset file before loading it
 
 ## Locations and lookup order
 
 1. `~/.drawio-skill/styles/<name>.json` — user presets (survive `git pull`).
-2. `<this-skill-dir>/styles/built-in/<name>.json` — built-ins shipped with the skill (`default`, `corporate`, `handdrawn`, `colorblind-safe` — Okabe-Ito palette, distinguishable under color-vision deficiency, thicker strokes; `dark` — dark fills + page background, light strokes, needs the `extras.fontColor`/`edgeColor`/`background` rules below).
+2. `<drawio-directory>/styles/built-in/<name>.json` — built-ins shipped beside `GUIDE.md` under `assets/drawio/` (`default`, `corporate`, `handdrawn`, `colorblind-safe` — Okabe-Ito palette, distinguishable under color-vision deficiency, thicker strokes; `dark` — dark fills + page background, light strokes, needs the `extras.fontColor`/`edgeColor`/`background` rules below).
 
 A user preset shadows a built-in of the same name.
 
@@ -23,7 +23,7 @@ Only user presets can have `"default": true`. When the user says *"make `<built-
 
 > **Existing diagrams:** these rules apply at generation time. To re-theme a `.drawio` that already exists, run `python3 scripts/restyle.py diagram.drawio --preset <name>` — it applies the palette (hue-mapped), font, and extras without touching layout or edge routing.
 
-When SKILL.md's Step 0 identified a preset, it fully replaces the built-in palette, shape keywords, edge defaults, and font for this diagram — do not mix values from the built-in color table.
+When the Creation workflow identifies a preset, it replaces the built-in palette, shape keywords, edge defaults, and font for this diagram — do not mix values from the built-in color table.
 
 **Color lookup.** For each role a shape plays (service / database / queue / gateway / error / external / security), resolve `preset.roles[role]` to a slot name, then `preset.palette[<slot>]` to the `(fillColor, strokeColor)` pair. If `roles[role]` is unset or the resolved slot is `null`, follow this fallback ladder:
 

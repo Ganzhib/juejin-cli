@@ -31,6 +31,20 @@ test('missing session returns auth error without making a request', () => {
   } finally { rmSync(home, { recursive: true }); }
 });
 
+test('schema depth errors and skill discovery preserve the JSON stream contract', () => {
+  const home = mkdtempSync(join(tmpdir(), 'juejin-cli-'));
+  try {
+    const invalid = cli(['schema', '--depth', '-1', '--json'], home);
+    assert.equal(invalid.status, 2);
+    assert.equal(invalid.stdout, '');
+    assert.equal(JSON.parse(invalid.stderr).error.code, 'INPUT');
+    const entry = cli(['skill', 'show', '--json'], home);
+    assert.equal(entry.status, 0, entry.stderr);
+    assert.equal(entry.stderr, '');
+    assert.equal(JSON.parse(entry.stdout).data.name, 'juejin-cli');
+  } finally { rmSync(home, { recursive: true }); }
+});
+
 test('column dry run validates metadata without a session or remote writes', () => {
   const home = mkdtempSync(join(tmpdir(), 'juejin-cli-'));
   try {
