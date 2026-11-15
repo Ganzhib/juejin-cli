@@ -12,12 +12,12 @@ export function registerArticle(context: CommandContext): void {
     .action(async (directory: string, options: SaveDraftOptions & { column: string }) => {
       context.emit(await (await context.services(!options.dryRun)).writing.publishDirectory(directory, options));
     });
-  paging(article.command('search <keyword>')).addOption(new Option('--sort <sort>', '排序方式').choices(['relevance', 'newest', 'hottest']).default('relevance')).action(async (keyword: string, options: Paging & { sort: string }) => {
+  paging(article.command('search <keyword>').description('按关键词搜索公开文章')).addOption(new Option('--sort <sort>', '排序方式').choices(['relevance', 'newest', 'hottest']).default('relevance')).action(async (keyword: string, options: Paging & { sort: string }) => {
     const sort = ['relevance', 'newest', 'hottest'].indexOf(options.sort);
     const page = await (await context.services()).client.search(keyword, options.cursor, options.limit, sort);
     context.emit({ ...page, items: page.items.map(articleSummary) });
   });
-  article.command('get <id>').addOption(new Option('--format <format>').choices(['json', 'markdown']).default('json')).action(async (articleId: string, options: { format: string }) => {
+  article.command('get <id>').description('读取公开文章详情或 Markdown 正文').addOption(new Option('--format <format>').choices(['json', 'markdown']).default('json')).action(async (articleId: string, options: { format: string }) => {
     const result = await (await context.services()).client.article(id(articleId));
     if (options.format === 'markdown' && !context.globals().json) context.output.text(result.article_info.mark_content + '\n');
     else context.emit(result);

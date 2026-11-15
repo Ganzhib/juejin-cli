@@ -12,7 +12,7 @@ Read this **before hand-writing any `.drawio` XML** (workflow step 3). Skip it w
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <!-- user shapes start at id="2" -->
+        <!-- use stable user shape IDs; reserve 0 and 1 for root cells -->
       </root>
     </mxGraphModel>
   </diagram>
@@ -22,7 +22,7 @@ Read this **before hand-writing any `.drawio` XML** (workflow step 3). Skip it w
 **Rules:**
 
 - `id="0"` and `id="1"` are required root cells — never omit them
-- User shapes start at `id="2"` and increment sequentially
+- Give user shapes unique, stable semantic IDs; numeric examples below use `2` and above. Never reuse root IDs `0` or `1`.
 - All shapes have `parent="1"` (unless inside a container — then use container's id)
 - All text uses `html=1` in style for proper rendering
 - **Never use `--` inside XML comments** — it's illegal per XML spec and causes parse errors

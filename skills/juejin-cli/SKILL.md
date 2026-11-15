@@ -5,11 +5,25 @@ description: 使用 juejin CLI 查询稀土掘金文章、管理 Markdown 草稿
 
 # 掘金 CLI
 
-需要整理技术文章或自动补齐发布配置时，先读本地 [技术写作与发布指南](references/technical-writing.md)。可选用 [空白元数据骨架](templates/article.md)，按真实内容填写分类标签，正文结构由素材决定。
+这是掘金工作流的唯一入口。只加载当前任务需要的资料：
 
-架构图和流程图优先使用同目录下内置的 [draw.io 技能](../drawio-skill/SKILL.md)，保留可编辑图源并导出 PNG 后上传。运行 `juejin skill status --name drawio-skill --json` 检查安装。技能本地可读；脚本需要 Python 3，原生图片导出需要 draw.io Desktop。
+| 当前任务 | 按需读取 |
+| --- | --- |
+| 查询、草稿、专栏、发布与恢复 | 本入口及目标命令的 `schema` |
+| 整理技术文章、补齐发布配置或批量发布 | [技术写作与发布指南](references/technical-writing.md)、[写作原则](references/editorial-principles.md) |
+| 创建文章文件 | [空白元数据骨架](templates/article.md)，按内容组织正文 |
+| 架构图或流程图 | [绘图指南](assets/drawio/GUIDE.md)，只读对应任务的参考文件 |
+| 具体场景与提示词 | [场景示例](references/scenarios.md) |
 
-通过本机 `juejin` 命令操作掘金。先用 `juejin schema --json` 查看命令树，再用 `juejin schema article publish --json` 等查询目标命令的参数、必填项与枚举。调用时使用 `--json`。成功结果在 stdout 的 `data` 中；失败结果在 stderr 的 `error` 中，并返回非零退出码。
+绘图工具随本入口安装，无需发现或安装第二个 Skill。在 `assets/drawio/` 下运行指南中的命令，或使用脚本绝对路径。保留 `.drawio` 图源，导出 PNG 并检查后上传。脚本需要 Python 3，原生图片导出需要 draw.io Desktop。
+
+## 发现与调用
+
+通过本机 `juejin` 操作掘金。目标命令已知时直接查询 `juejin schema article publish --json`；未知时先用 `juejin schema --depth 1 --json` 查看入口，再逐级查询。不要每次加载完整命令树。元数据来自实际命令定义，以当前版本为准。
+
+未安装 Skill 时，用 `juejin skill show --json` 读取本入口，按返回的 `directory` 解析相对资源路径。调用业务命令时使用 `--json`，先检查退出码，再解析对应流：成功为 stdout 的 `{ok:true,data:...}`；失败为 stderr 的 `{ok:false,error:{code,message,details?}}`。人类帮助与版本查询使用 `--help`、`--version`，不要将其当作 JSON 数据接口。
+
+用参数数组启动进程；正文走文件，ID 始终作为字符串。需要固定执行版本时设置 `JUEJIN_AUTO_UPDATE=0`。无需安装 Skill 时可设置 `JUEJIN_AUTO_INSTALL_SKILL=0`。
 
 ## 读取内容
 

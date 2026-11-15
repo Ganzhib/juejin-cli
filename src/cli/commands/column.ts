@@ -12,20 +12,20 @@ function columnOptions(command: Command): Command {
 
 export function registerColumn(context: CommandContext): void {
   const column = context.program.command('column').description('专栏查询、新建、修改与文章列表');
-  paging(column.command('list')).option('--user <id>', '查询指定用户的公开专栏；省略则查询自己的创作者列表', id).action(async (options: Paging & { user?: string }) => {
+  paging(column.command('list').description('列出当前账号或指定用户的专栏')).option('--user <id>', '查询指定用户的公开专栏；省略则查询自己的创作者列表', id).action(async (options: Paging & { user?: string }) => {
     const { client } = await context.services(!options.user);
     if (options.user) context.emit(await client.userColumns(options.user, options.cursor, options.limit));
     else context.emit(await client.columns(options.page, options.limit));
   });
-  column.command('get <id>').action(async (columnId: string) => context.emit(await (await context.services()).client.column(id(columnId))));
-  paging(column.command('articles <id>')).action(async (columnId: string, options: Paging) => {
+  column.command('get <id>').description('读取公开专栏详情').action(async (columnId: string) => context.emit(await (await context.services()).client.column(id(columnId))));
+  paging(column.command('articles <id>').description('分页读取专栏中的公开文章')).action(async (columnId: string, options: Paging) => {
     const page = await (await context.services()).client.columnArticles(id(columnId), options.cursor, options.limit);
     context.emit({ ...page, items: page.items.map(articleSummary) });
   });
-  columnOptions(column.command('create')).action(async (options: ColumnOptions) => {
+  columnOptions(column.command('create').description('创建专栏，提交后可能需要审核')).action(async (options: ColumnOptions) => {
     context.emit(await (await context.services(!options.dryRun)).writing.saveColumn(options));
   });
-  columnOptions(column.command('update <id>')).action(async (columnId: string, options: ColumnOptions) => {
+  columnOptions(column.command('update <id>').description('修改已有专栏，省略的字段沿用原值')).action(async (columnId: string, options: ColumnOptions) => {
     context.emit(await (await context.services(true)).writing.saveColumn(options, id(columnId)));
   });
 }

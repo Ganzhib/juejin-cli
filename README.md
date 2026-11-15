@@ -112,11 +112,11 @@ juejin lottery lucky-draw --json
 
 ## Agent Skill 自动安装
 
-0.2.0 同时内置 `juejin-cli` 写作技能和 `drawio-skill` 绘图技能，安装到同一个 Agent 技能根目录，内容均来自 npm 包，无需再次下载技能仓库。写作指南采用本地参考文件和可自由组织的空白骨架。draw.io 脚本需要 Python 3，PNG 导出需要另装 draw.io Desktop；CLI 不会自动安装系统软件。
+默认只安装 `juejin-cli` 一个 Skill 入口。写作指南、文章模板和 draw.io 工具均包含在这个目录内，由入口按任务引导加载，无需再次下载技能仓库。draw.io 脚本需要 Python 3，PNG 导出需要另装 draw.io Desktop；CLI 不会自动安装系统软件。
 
 ```bash
-juejin skill status --name drawio-skill --json
-juejin skill install --name drawio-skill
+juejin skill show --json
+juejin schema --depth 1 --json
 ```
 
 Skill 随 CLI 的 npm 包一起下载，内容与当前 CLI 版本对应，不额外从 GitHub 拉取不匹配的最新版。安装脚本会自动安装到 `~/.agents/skills/juejin-cli/`，供 Codex 与 Cursor 发现；检测到 `~/.claude/` 时，也会安装到 Claude Code 的技能目录。使用 npx 或禁用安装脚本时，首次运行 CLI 会自动补装。
@@ -129,6 +129,8 @@ juejin skill install --dir /path/to/skills --json
 ```
 
 安装器会识别本包管理的版本并按需更新；已有自定义或手动修改过的同名 Skill 会保留。设置 `JUEJIN_AUTO_INSTALL_SKILL=0` 可关闭自动安装，`JUEJIN_SKILLS_DIR` 可指定 skills 根目录。新安装的 Skill 未出现在 Agent 中时，重新开启会话。
+
+`skill show` 直接读取当前 CLI 包内的入口，无需登录或安装；JSON 返回 `content`、`directory`、`path` 与 `version`，相对资源路径以 `directory` 为准。普通模式直接输出 Markdown。旧版安装的独立 `drawio-skill` 不会被自动删除或更新；旧的 `skill install/status --name drawio-skill` 仍兼容，但新流程无需调用。
 
 Skill 包含草稿、专栏、发布和热点选题示例，源码见 [skills/juejin-cli](skills/juejin-cli)。
 
@@ -254,12 +256,12 @@ SDK 用法见 [AI 与 SDK 使用说明](docs/AI_USAGE.md)。首版交付 CLI 和
 Agent 可按需发现命令，无需提前加载全部帮助：
 
 ```bash
-juejin schema --json
+juejin schema --depth 1 --json
 juejin schema article publish --json
 juejin schema column create --json
 ```
 
-结果包含参数、必填项、默认值与枚举，直接从命令注册信息生成。
+结果包含 `schema_version`、`cli_version`，以及命令路径、参数、必填项、默认值与枚举，直接从命令注册信息生成。`--depth 0` 只描述目标命令，`--depth 1` 加上直接子命令，省略时保持完整树输出。`has_subcommands` 表明能否继续查询；`path` 可直接作为下一次 `schema` 调用的参数数组。
 
 ## 开发与验证
 

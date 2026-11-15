@@ -8,11 +8,11 @@ const aiSetupPrompt = `请直接帮我安装并配置 juejin-cli，让我之后�
 项目官网：https://ganzhib.github.io/juejin-cli/
 开源仓库：https://github.com/Ganzhib/juejin-cli
 先检查我的操作系统、Node.js 和 npm；需要 Node.js 22.16+，优先使用兼容的 LTS 版本。然后执行 npm install -g {{PACKAGE_NAME}}@latest，遇到权限或路径问题请诊断原因，不要反复重试。
-核验 juejin --version 和 juejin schema --json，检查 juejin skill status --json 与 juejin skill status --name drawio-skill --json；缺少技能时安装对应内置 Skill，保留我已有的自定义文件，并读取本地 SKILL.md。
+核验 juejin --version 和 juejin schema --depth 1 --json，检查 juejin skill status --json；缺少技能时安装 juejin-cli 统一入口，保留我已有的自定义文件。通过 juejin skill show --json 读取入口，写作和绘图资料按需加载。
 检查 juejin auth status --json；如未登录，先完成 juejin auth setup，再启动 juejin auth login，引导我在打开的浏览器验证，完成后重新核验账号。不要索取或展示我的 Cookie、密码和验证码。
 最后用中文告诉我是否装好、登录的是哪个账号，并给出一条“把我的 Markdown 保存为草稿”的使用示例。本次只安装和配置，不创建测试文章、不对外发布。若你不能操作我的电脑，请明确说明，并告诉我该把这段话交给哪个具备本机终端能力的 AI。`;
 const installNotes = {
-  npm: "安装最新版，之后启动时自动更新。写作与 draw.io 绘图 Skill 一并安装。",
+  npm: "安装最新版，之后启动时自动更新。统一 Skill 入口内置写作与绘图资料。",
   npx: "无需全局安装。首次运行会自动安装配套 Skill。",
   source: "从源码构建后，首次运行 juejin 会自动安装配套 Skill。",
   ai: "适用于能操作本机终端的 AI。需要登录验证时，由你在浏览器完成。",

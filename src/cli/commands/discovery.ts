@@ -5,9 +5,9 @@ import { articleSummary } from '../presentation.js';
 
 export function registerDiscovery(context: CommandContext): void {
   const program = context.program;
-  program.command('category').description('分类').command('list').action(async () => context.emit(await (await context.services()).client.categories()));
+  program.command('category').description('分类').command('list').description('列出可用文章分类及 ID').action(async () => context.emit(await (await context.services()).client.categories()));
   const tag = program.command('tag').description('标签');
-  paging(tag.command('list')).action(async (options: Paging) => context.emit(await (await context.services()).client.tags(options.cursor, options.limit)));
+  paging(tag.command('list').description('分页列出标签及 ID')).action(async (options: Paging) => context.emit(await (await context.services()).client.tags(options.cursor, options.limit)));
   tag.command('search <keyword>').description('全量分页后按标签名称搜索').action(async (keyword: string) => context.emit(await (await context.services()).client.findTags(keyword)));
   program.command('hot').description('文章热榜').option('--category <category>', '分类名称、slug 或 ID', 'frontend').option('--limit <number>', '最多条数', limit, 20).action(async (options: { category: string; limit: number }) => {
     const { client } = await context.services();

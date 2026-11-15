@@ -15,7 +15,8 @@ try {
   const paths = new Set(packed.files.map(file => file.path));
   for (const path of ['dist/cli.js', 'dist/cli/program.js', 'dist/runtime/skills.js', 'dist/runtime/browser-http.js', 'dist/runtime/schedule.js', 'dist/cli/commands/checkin.js', 'skills/juejin-cli/SKILL.md', 'skills/juejin-cli/references/scenarios.md', 'scripts/postinstall.mjs']) assert.ok(paths.has(path), `Missing ${path}`);
   assert.ok(!paths.has('dist/skills.js'), 'Stale modules must be removed by the clean build');
-  for (const path of ['skills/juejin-cli/references/editorial-principles.md', 'skills/juejin-cli/templates/article.md', 'skills/drawio-skill/SKILL.md', 'skills/drawio-skill/LICENSE', 'skills/drawio-skill/scripts/validate.py']) assert.ok(paths.has(path), `Missing ${path}`);
+  for (const path of ['skills/juejin-cli/references/editorial-principles.md', 'skills/juejin-cli/templates/article.md', 'skills/juejin-cli/assets/drawio/GUIDE.md', 'skills/juejin-cli/assets/drawio/LICENSE', 'skills/juejin-cli/assets/drawio/scripts/validate.py']) assert.ok(paths.has(path), `Missing ${path}`);
+  assert.deepEqual([...paths].filter(path => path.endsWith('/SKILL.md')), ['skills/juejin-cli/SKILL.md']);
   assert.ok(![...paths].some(path => path.includes('session.json') || path.startsWith('output/')));
   const archive = join(directory, packed.filename);
   const prefix = join(directory, 'install');
@@ -27,9 +28,13 @@ try {
   const metadata = JSON.parse(await readFile(join(installed, 'package.json'), 'utf8'));
   assert.equal(run(process.execPath, [cli, '--version'], env).trim(), metadata.version);
   await access(join(skillsRoot, 'juejin-cli', 'SKILL.md'));
-  await access(join(skillsRoot, 'drawio-skill', 'scripts', 'validate.py'));
-  const drawioStatus = JSON.parse(run(process.execPath, [cli, 'skill', 'status', '--name', 'drawio-skill', '--json'], env));
-  assert.equal(drawioStatus.data.state, 'installed');
+  await access(join(skillsRoot, 'juejin-cli', 'assets', 'drawio', 'scripts', 'validate.py'));
+  await assert.rejects(access(join(skillsRoot, 'drawio-skill')));
+  const entry = JSON.parse(run(process.execPath, [cli, 'skill', 'show', '--json'], env)).data;
+  assert.equal(entry.content, await readFile(entry.path, 'utf8'));
+  await access(join(entry.directory, 'assets/drawio/GUIDE.md'));
+  const overview = JSON.parse(run(process.execPath, [cli, 'schema', '--depth', '1', '--json'], env)).data;
+  assert.ok(overview.command.commands.every(command => command.commands.length === 0));
   const schema = JSON.parse(run(process.execPath, [cli, 'schema', 'article', 'publish', '--json'], env));
   assert.equal(schema.data.command.name, 'publish');
   const scheduleSchema = JSON.parse(run(process.execPath, [cli, 'schema', 'checkin', 'schedule', '--json'], env));

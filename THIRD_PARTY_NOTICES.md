@@ -2,10 +2,12 @@
 
 ## Agents365-ai/drawio-skill
 
-`skills/drawio-skill/` bundles Draw.io Architecture Studio 3.4.4 from
+`skills/juejin-cli/assets/drawio/` bundles Draw.io Architecture Studio 3.4.4 from
 https://github.com/Agents365-ai/drawio-skill/tree/main/skills/drawio-skill
 under the MIT license. Copyright (c) 2026 Agents365-ai.
-The complete upstream license is retained in `skills/drawio-skill/LICENSE`.
+The complete upstream license is retained in `skills/juejin-cli/assets/drawio/LICENSE`.
+The upstream entry is named `GUIDE.md` and loaded on demand from the single
+`juejin-cli` Skill entry; scripts and their relative resources remain together.
 The explicit-only invocation flag was removed to support diagram discovery in
 the bundled writing workflow. Python bytecode caches are excluded; draw.io
 Desktop is an external optional dependency and is not distributed in this package.

@@ -9,6 +9,7 @@ export type SkillAgent = 'shared' | 'claude' | 'cursor';
 export type BundledSkillName = 'juejin-cli' | 'drawio-skill';
 const SKILL_NAME = 'juejin-cli';
 const BUNDLED_SKILL = join(PACKAGE_ROOT, 'skills', 'juejin-cli');
+const BUNDLED_DRAWIO = join(BUNDLED_SKILL, 'assets', 'drawio');
 const RECEIPT = '.juejin-cli-install.json';
 interface SkillReceipt { package: string; version: string; files: Record<string, string> }
 export interface SkillStatus {
@@ -22,6 +23,17 @@ export function skillDirectory(agent: SkillAgent = 'shared'): string {
   if (agent === 'claude') return join(homedir(), '.claude', 'skills', SKILL_NAME);
   if (agent === 'cursor') return join(homedir(), '.cursor', 'skills', SKILL_NAME);
   return join(homedir(), '.agents', 'skills', SKILL_NAME);
+}
+
+/** Read the matching package entry without requiring an installed Agent skill. */
+export async function readSkill() {
+  return {
+    name: SKILL_NAME,
+    version: VERSION,
+    path: join(BUNDLED_SKILL, 'SKILL.md'),
+    directory: BUNDLED_SKILL,
+    content: await readFile(join(BUNDLED_SKILL, 'SKILL.md'), 'utf8'),
+  };
 }
 
 function digest(content: string | Uint8Array): string { return createHash('sha256').update(content).digest('hex'); }
@@ -76,7 +88,12 @@ export async function installSkill(directory = skillDirectory(), name: BundledSk
   if (status.state === 'modified' || status.state === 'unmanaged') {
     throw new CliError('INPUT', `已有自定义 Skill，已保留原文件：${directory}。请选择其他目录或先备份并移走该目录。`);
   }
-  const files = await bundledFiles(join(PACKAGE_ROOT, 'skills', name));
+  const files = await bundledFiles(name === 'juejin-cli' ? BUNDLED_SKILL : BUNDLED_DRAWIO);
+  // Explicit legacy installs remain supported; the default has only one Skill entry.
+  if (name === 'drawio-skill') {
+    files['SKILL.md'] = files['GUIDE.md']!;
+    delete files['GUIDE.md'];
+  }
   const hashes = Object.fromEntries(Object.entries(files).map(([path, content]) => [path, digest(content)]));
   if (previous?.version === VERSION && JSON.stringify(previous.files) === JSON.stringify(hashes)) return status;
   await mkdir(directory, { recursive: true });
@@ -110,16 +127,14 @@ export async function autoInstallSkill(options: { quiet?: boolean } = {}): Promi
     }
   }
   for (const directory of directories) {
-    for (const name of ['juejin-cli', 'drawio-skill'] as const) {
     try {
-      await installSkill(join(dirname(directory), name), name);
+      await installSkill(directory);
     } catch (error) {
       // An unwritable or customized skill directory must not disable the CLI itself.
       if (!options.quiet) {
         const message = error instanceof Error ? error.message : String(error);
         process.stderr.write(`Skill 自动安装未完成：${message} 可运行 juejin skill install 手动处理。\n`);
       }
-    }
     }
   }
 }
