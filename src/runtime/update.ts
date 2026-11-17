@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { PACKAGE_NAME, PACKAGE_ROOT, VERSION } from '../package.js';
 import { CliError } from '../shared/errors.js';
+import { networkFetch } from './network.js';
 
 const REGISTRY = 'https://registry.npmjs.org';
 const stableVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
@@ -124,7 +125,7 @@ export async function runUpdatedCli(args: string[], options: UpdateOptions = {})
       stableVersion.test(saved.version) && (!newerVersion(saved.version, version) || Boolean(entry));
   } catch { /* The bundled version remains usable without a writable cache. */ }
   if (!recentlyChecked) try {
-    const response = await (options.fetch ?? fetch)(`${REGISTRY}/${encodeURIComponent(PACKAGE_NAME)}/latest`,
+    const response = await (options.fetch ?? networkFetch)(`${REGISTRY}/${encodeURIComponent(PACKAGE_NAME)}/latest`,
       { signal: AbortSignal.timeout(1500), cache: 'no-store' });
     if (!response.ok) throw new Error('更新检查失败');
     const latest = await response.json() as { name?: string; version?: string };

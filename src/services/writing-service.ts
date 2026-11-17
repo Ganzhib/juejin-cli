@@ -3,7 +3,7 @@ import { ImageUploader, validateImage } from '../platform/juejin/imagex.js';
 import { SessionStore } from '../runtime/session.js';
 import { OperationJournal } from '../runtime/journal.js';
 import { localImagePath } from '../content/markdown.js';
-import { CliError } from '../shared/errors.js';
+import { CliError, WriteNotStartedError } from '../shared/errors.js';
 import { DraftService, type DraftOptions } from './draft-service.js';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -57,13 +57,29 @@ export class WritingService {
         let item = state.items.find(item => item.file === file);
         if (!item) {
           item = { file, phase: 'creating' }; state.items.push(item); await save();
-          const draft = await this.saveDraft(file, options);
+          let draft;
+          try { draft = await this.saveDraft(file, options); }
+          catch (error) {
+            if (error instanceof WriteNotStartedError) {
+              state.items = state.items.filter(entry => entry !== item);
+              await save();
+            }
+            throw error;
+          }
           if (!('draft_id' in draft)) throw new CliError('INTERNAL', '草稿未返回 ID。');
           item.draft_id = draft.draft_id; item.phase = 'draft'; await save();
         }
         if (!item.draft_id) throw new CliError('INPUT', '批量进度缺少草稿 ID，请核对回执。');
         item.phase = 'publishing'; await save();
-        const article = await this.publish({ draft: item.draft_id, columns: [options.column] });
+        let article;
+        try { article = await this.publish({ draft: item.draft_id, columns: [options.column] }); }
+        catch (error) {
+          if (error instanceof WriteNotStartedError) {
+            item.phase = 'draft';
+            await save();
+          }
+          throw error;
+        }
         if (!('article_id' in article)) throw new CliError('INTERNAL', '发布未返回文章 ID。');
         item.article_id = article.article_id; item.phase = 'done'; await save();
       }

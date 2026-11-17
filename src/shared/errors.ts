@@ -11,6 +11,13 @@ export class CliError extends Error {
   }
 }
 
+// Only local lock acquisition/setup may establish that no write has started.
+export class WriteNotStartedError extends CliError {
+  constructor(code: ErrorCode, message: string, details?: Record<string, unknown>) {
+    super(code, message, { ...details, write_started: false });
+  }
+}
+
 export function exitCode(error: CliError): number {
   switch (error.code) {
     case 'INPUT': return 2;
