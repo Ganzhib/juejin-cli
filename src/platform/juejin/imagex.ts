@@ -6,6 +6,7 @@ import { basename, extname } from 'node:path';
 import { crc32 } from 'node:zlib';
 import { CliError } from '../../shared/errors.js';
 import { JuejinHttp, USER_AGENT } from './http.js';
+import { networkFetch } from '../../runtime/network.js';
 
 interface TemporaryToken { AccessKeyId: string; SecretAccessKey: string; SessionToken: string }
 interface UploadAddress {
@@ -50,13 +51,14 @@ export function signImageX(token: TemporaryToken, query: Record<string, string>,
 }
 
 export class ImageUploader {
-  constructor(private readonly http: JuejinHttp, private readonly fetch = globalThis.fetch) {}
+  constructor(private readonly http: JuejinHttp, private readonly fetch = networkFetch) {}
 
   private async send(url: string, init: RequestInit = {}): Promise<Response> {
     let response: Response;
     try {
       response = await this.fetch(url, { ...init, signal: AbortSignal.timeout(30_000) });
-    } catch {
+    } catch (error) {
+      if (error instanceof CliError) throw error;
       throw new CliError('NETWORK', '图片上传请求未完成，请检查草稿和上传结果后再决定是否重试。');
     }
     if (!response.ok) throw new CliError('API', `图片上传返回 HTTP ${response.status}。`);

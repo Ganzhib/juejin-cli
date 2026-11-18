@@ -1,5 +1,6 @@
 import { CliError } from '../../shared/errors.js';
 import JSONbig from 'json-bigint';
+import { networkFetch } from '../../runtime/network.js';
 
 // Web responses include 19-digit numeric IDs. Preserve those tokens before JS rounds them.
 const json = JSONbig({ storeAsString: true, protoAction: 'error', constructorAction: 'error' });
@@ -28,7 +29,7 @@ export class JuejinHttp {
   private readonly cookie: string;
 
   constructor(options: HttpOptions = {}) {
-    this.fetch = options.fetch ?? globalThis.fetch;
+    this.fetch = options.fetch ?? networkFetch;
     this.timeoutMs = options.timeoutMs ?? 30_000;
     this.cookie = options.cookie ?? '';
   }
@@ -48,7 +49,8 @@ export class JuejinHttp {
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: AbortSignal.timeout(this.timeoutMs),
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof CliError) throw error;
       throw new CliError('NETWORK', `请求 ${path} 未完成；写操作结果可能未知，请先查询再决定是否重试。`, { path });
     }
     if (!response.ok) {

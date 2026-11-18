@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { Cookie } from 'playwright';
-import { CliError } from '../shared/errors.js';
+import { CliError, WriteNotStartedError } from '../shared/errors.js';
 import { JuejinHttp } from '../platform/juejin/http.js';
 
 export function defaultHome(): string {
@@ -53,17 +53,21 @@ export class SessionStore {
   async clear(): Promise<void> { await rm(this.path, { force: true }); }
 
   async withWriteLock<T>(action: () => Promise<T>): Promise<T> {
-    await mkdir(this.home, { recursive: true, mode: 0o700 });
     const lockPath = join(this.home, 'write.lock');
     let lock;
+    let openingLock = false;
     try {
+      await mkdir(this.home, { recursive: true, mode: 0o700 });
+      openingLock = true;
       lock = await open(lockPath, 'wx', 0o600);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-      throw new CliError('BUSY', `另一个写操作正在执行。若进程已退出，请检查后手动删除 ${lockPath}。`);
+      const code = (error as NodeJS.ErrnoException).code;
+      if (openingLock && code === 'EEXIST') throw new WriteNotStartedError('BUSY', '另一个写入任务正在执行；本次尚未开始写入，请等待任务结束后重试。', { lock: lockPath });
+      throw new WriteNotStartedError('INPUT', '无法创建写锁，本次尚未开始写入；请检查目录权限，或用 --home 指定可写的已登录会话目录。', { home: this.home, filesystem_code: code });
     }
     try {
-      await lock.writeFile(JSON.stringify({ pid: process.pid, started_at: new Date().toISOString() }));
+      try { await lock.writeFile(JSON.stringify({ pid: process.pid, started_at: new Date().toISOString() })); }
+      catch (error) { throw new WriteNotStartedError('INPUT', '写锁记录失败，本次尚未开始写入；请检查会话目录权限和磁盘空间。', { home: this.home, filesystem_code: (error as NodeJS.ErrnoException).code }); }
       return await action();
     } finally {
       await lock.close();
